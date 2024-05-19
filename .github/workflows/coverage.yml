@@ -71,4 +71,5 @@ jobs:
           --print-summary
         shell: bash
 
-      # TODO Coveralls integration
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
