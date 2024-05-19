@@ -1,0 +1,5 @@
+# Project exclude paths
+/.vscode
+build
+generated
+CMakeUserPresets.json

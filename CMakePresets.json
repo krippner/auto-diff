@@ -1,0 +1,174 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "ninja-debug",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "build/Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "ninja-release",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-flags",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic -march=native -fvisibility=hidden -fno-math-errno",
+                "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold"
+            }
+        },
+        {
+            "name": "msvc-flags",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "/W4 /EHsc /arch:AVX2 /bigobj"
+            }
+        },
+        {
+            "name": "options-default",
+            "hidden": true,
+            "cacheVariables": {
+                "BUILD_TESTING": "OFF",
+                "AUTODIFF_BUILD_EXAMPLES": "OFF",
+                "AUTODIFF_BUILD_BENCHMARKS": "OFF"
+            }
+        },
+        {
+            "name": "tests-ninja-linux-debug",
+            "displayName": "Linux Debug",
+            "description": "Unit tests using Ninja (Debug)",
+            "inherits": [
+                "ninja-debug",
+                "gcc-flags",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "BUILD_TESTING": "ON"
+            }
+        },
+        {
+            "name": "tests-ninja-linux-release",
+            "displayName": "Linux Release",
+            "description": "Unit tests using Ninja (Release)",
+            "inherits": [
+                "ninja-release",
+                "gcc-flags",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "BUILD_TESTING": "ON"
+            }
+        },
+        {
+            "name": "examples-ninja-linux-debug",
+            "displayName": "Examples",
+            "description": "Examples using Ninja (Debug)",
+            "inherits": [
+                "ninja-debug",
+                "gcc-flags",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "AUTODIFF_BUILD_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "examples-ninja-linux-release",
+            "displayName": "Examples",
+            "description": "Examples using Ninja (Release)",
+            "inherits": [
+                "ninja-release",
+                "gcc-flags",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "AUTODIFF_BUILD_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "benchmarks-ninja-linux",
+            "displayName": "Benchmarks",
+            "description": "Benchmarks using Ninja (Release)",
+            "inherits": [
+                "ninja-release",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "AUTODIFF_BUILD_BENCHMARKS": "ON"
+            }
+        },
+        {
+            "name": "tests-msvc2022",
+            "displayName": "MSVC 2022",
+            "description": "Unit tests using Visual Studio 17 2022",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "build",
+            "inherits": [
+                "msvc-flags",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "BUILD_TESTING": "ON"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "coverage-gcov",
+            "displayName": "gcov",
+            "description": "Unit test coverage using gcov",
+            "inherits": [
+                "ninja-debug",
+                "options-default"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "--coverage -g -Og",
+                "BUILD_TESTING": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "tests-msvc2022-debug",
+            "displayName": "MSVC 2022 Debug",
+            "description": "Visual Studio 17 2022 (Debug)",
+            "configurePreset": "tests-msvc2022",
+            "configuration": "Debug",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "tests-msvc2022-release",
+            "displayName": "MSVC 2022 Release",
+            "description": "Visual Studio 17 2022 (Release)",
+            "configurePreset": "tests-msvc2022",
+            "configuration": "Release",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ]
+}

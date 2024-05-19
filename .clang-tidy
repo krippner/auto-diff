@@ -1,0 +1,21 @@
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-isolate-declaration,
+  -*-uppercase-literal-suffix,
+  -*-avoid-do-while,
+  -*-branch-clone,
+  -*-magic-numbers,
+  -*-macro-usage,
+  -*-macro-parentheses,
+ExtraArgs: - -std=c++17
+HeaderFilterRegex: ".*(AutoDiff).*$"

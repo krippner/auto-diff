@@ -1,0 +1,9 @@
+BasedOnStyle: WebKit
+ColumnLimit: 80
+AlwaysBreakTemplateDeclarations: Yes
+Cpp11BracedListStyle: true
+SpaceBeforeCpp11BracedList: false
+FixNamespaceComments: true
+AlignConsecutiveAssignments: Consecutive
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: true

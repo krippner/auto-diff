@@ -1,0 +1,74 @@
+name: Code Coverage
+
+on:
+  push:
+    paths:
+      - 'include/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - '**conanfile.py'
+      - '.github/workflows/coverage.yml'
+  pull_request:    
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install gcovr
+        run: pip install gcovr
+
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: Install Conan
+        uses: turtlebrowser/get-conan@main
+    
+      - name: Configure Conan
+        run: conan profile detect --force
+
+      - name: Install dependencies
+        run: >
+          conan install
+          --build=missing
+          --settings build_type=Debug
+          --settings compiler.cppstd=17
+          ${{github.workspace}}
+
+      - name: Configure CMake
+        run: >
+          cmake
+          -DCMAKE_CXX_COMPILER=g++
+          -DCMAKE_TOOLCHAIN_FILE=build/Debug/generators/conan_toolchain.cmake
+          --preset=coverage-gcov
+
+      - name: Build
+        run: cmake --build build/Debug
+    
+      - name: Test
+        run: ctest --test-dir build/Debug
+
+      # Compute line coverage
+      - name: Generate coverage report
+        id: coverage
+        run: >
+          gcovr
+          --root ${{github.workspace}}
+          --filter include/
+          --exclude-throw-branches
+          --exclude-unreachable-branches
+          --lcov coverage.lcov
+          --print-summary
+        shell: bash
+
+      # TODO Coveralls integration

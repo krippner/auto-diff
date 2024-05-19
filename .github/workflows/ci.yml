@@ -1,0 +1,98 @@
+name: CI Builds
+
+on:
+  push:
+    paths:
+      - 'include/**'
+      - 'tests/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - '**conanfile.py'
+      - '.github/workflows/ci.yml'
+  pull_request:    
+
+jobs:
+  build_and_test:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+
+        cpp_compiler: [g++, clang++, cl]
+        build_type: [Debug]
+
+        include:
+
+          # GCC
+          - os: ubuntu-latest
+            cpp_compiler: g++
+            build_type: Debug
+            build_dir: build/Debug
+            config_preset: tests-ninja-linux-debug
+
+          # Clang
+          - os: ubuntu-latest
+            cpp_compiler: clang++
+            build_type: Debug
+            build_dir: build/Debug
+            config_preset: tests-ninja-linux-debug
+
+          # MSVC
+          - os: windows-latest
+            cpp_compiler: cl
+            build_dir: build
+            config_preset: tests-msvc2022
+
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: Install Conan
+        uses: turtlebrowser/get-conan@main
+    
+      - name: Configure Conan
+        run: conan profile detect --force
+
+      - name: Install dependencies
+        run: >
+          conan install
+          --build=missing
+          --settings build_type=${{matrix.build_type}}
+          --settings compiler.cppstd=17
+          ${{github.workspace}}
+
+      - name: Configure CMake
+        run: >
+          cmake
+          -S ${{github.workspace}}
+          -DCMAKE_CXX_COMPILER=${{matrix.cpp_compiler}}
+          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/${{matrix.build_dir}}/generators/conan_toolchain.cmake
+          --preset=${{matrix.config_preset}}
+
+      - name: Build
+        if: matrix.os == 'ubuntu-latest'
+        run: cmake --build ${{matrix.build_dir}}
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: >
+          cmake
+          --build ${{matrix.build_dir}}
+          --config ${{matrix.build_type}}
+          --parallel %NUMBER_OF_PROCESSORS%
+        shell: cmd
+
+      - name: Test
+        run: >
+          ctest
+          --test-dir ${{matrix.build_dir}}
+          --build-config ${{matrix.build_type}}
+          --output-on-failure

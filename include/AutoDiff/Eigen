@@ -1,0 +1,43 @@
+// Copyright (c) 2024 Matthias Krippner
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+/**
+ * @file Eigen
+ * @brief Include file for the Eigen module
+ *
+ * The Eigen module implements automatic differentiation for Eigen types,
+ * specifically arrays and dense vectors and matrices.
+ * Requires the Basic module for scalar operations and the Eigen library.
+ *
+ * Do not include headers in the @c src/Eigen directory directly.
+ * Instead, include this file.
+ */
+
+#ifndef AUTODIFF_EIGEN
+#define AUTODIFF_EIGEN
+
+#ifdef AUTODIFF_MODULE
+#error "Multiple modules included"
+#endif
+
+// module-specific specializations, aliases
+#include "src/Eigen/module.hpp"
+
+// include scalar operations from Basic module
+#include "src/Basic/ops.hpp"
+
+// include array operations
+#include "src/Eigen/Array/ops.hpp"
+
+// include componentwise (elementwise) operations
+#include "src/Eigen/CWise/ops.hpp"
+
+// include product operations
+#include "src/Eigen/Products/ops.hpp"
+
+// include reduction operations
+#include "src/Eigen/Reductions/ops.hpp"
+
+#endif // AUTODIFF_EIGEN

@@ -1,0 +1,23 @@
+// Copyright (c) 2024 Matthias Krippner
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+/**
+ * @file Core
+ * @brief Include file for the Core classes.
+ *
+ * The Core classes implement the abstract, coordinate-free representation of
+ * automatic differentiation.
+ *
+ * Do not include headers in the @c src/Core directory directly.
+ * Instead, include this file.
+ */
+
+#ifndef AUTODIFF_CORE
+#define AUTODIFF_CORE
+
+#include "src/Core/Function.hpp"
+#include "src/Core/Variable.hpp"
+
+#endif // AUTODIFF_CORE
