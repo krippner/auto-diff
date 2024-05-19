@@ -1,6 +1,7 @@
 # AutoDiff: automatic differentiation framework for C++
 
 [![CI Builds](https://github.com/krippner/auto-diff/actions/workflows/ci.yml/badge.svg)](https://github.com/krippner/auto-diff/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/krippner/auto-diff/badge.svg?branch=main)](https://coveralls.io/github/krippner/auto-diff?branch=main)
 
 Welcome to AutoDiff, a modern C++17 header-only library for **automatic differentiation (AD)** in forward- and reverse mode.
 Unlike other AD libraries, AutoDiff is a **framework** that provides the generic building blocks for AD, allowing you to choose what data types to compute with and to create custom AD implementations with ease.
