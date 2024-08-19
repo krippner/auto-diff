@@ -44,12 +44,12 @@ x + 3; // right-hand side literal
 The following operations are currently supported:
 
 - `+`, `-`, `*`, `/`: Arithmetic operations.
-- `pow`: Power function.
-- `sin`: Sine function.
-- `cos`: Cosine function.
+- `sin`, `cos`, `tan`, `cot`: Trigonometric functions.
+- `asin`, `acos`, `atan`, `acot`: Inverse trigonometric functions.
+- `sinh`, `cosh`, `tanh`: Hyperbolic functions.
 - `exp`: Exponential function.
 - `log`: Natural logarithm.
-- `sqrt`: Square root.
+- `pow`: Power function.
 - `square`: Square function.
-- `min`: Minimum of a scalar expression and zero.
-- `max`: Maximum of a scalar expression and zero.
+- `sqrt`: Square root.
+- `min`, `max`: Minimum, maximum of a scalar expression and zero.
