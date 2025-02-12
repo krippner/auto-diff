@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,40 +9,40 @@
 namespace AutoDiff::EigenAD::CWise {
 
 template <typename X, typename Y>
-class Pow : public BinaryOperation<Pow<X, Y>, X, Y> {
+class Pow : public Expression<Pow<X, Y>>, public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Pow<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().array().pow(Base::yValue().array()).matrix();
+        return Op::xValue().array().pow(Op::yValue().array()).matrix();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const xArray = Base::xValue().array();
-        auto const yArray = Base::yValue().array();
-        if constexpr (!Base::hasOperandX) {
-            return yDeriv(xArray, yArray) * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xDeriv(xArray, yArray) * Base::xPushForward();
+        auto const xArray = Op::xValue().array();
+        auto const yArray = Op::yValue().array();
+        if constexpr (!Op::hasOperandX) {
+            return yDeriv(xArray, yArray) * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xDeriv(xArray, yArray) * Op::xPushForward();
         } else {
-            return xDeriv(xArray, yArray) * Base::xPushForward()
-                 + yDeriv(xArray, yArray) * Base::yPushForward();
+            return xDeriv(xArray, yArray) * Op::xPushForward()
+                 + yDeriv(xArray, yArray) * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const xArray = Base::xValue().array();
-        auto const yArray = Base::yValue().array();
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xDeriv(xArray, yArray));
+        auto const xArray = Op::xValue().array();
+        auto const yArray = Op::yValue().array();
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xDeriv(xArray, yArray));
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * yDeriv(xArray, yArray));
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * yDeriv(xArray, yArray));
         }
     }
 
@@ -72,40 +72,41 @@ private:
  * @brief Special case of Pow<X, Y> for Y = Scalar
  */
 template <typename X, typename Y>
-class PowScalar : public BinaryOperation<PowScalar<X, Y>, X, Y> {
+class PowScalar : public Expression<PowScalar<X, Y>>,
+                  public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<PowScalar<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().array().pow(Base::yValue()).matrix();
+        return Op::xValue().array().pow(Op::yValue()).matrix();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const xArray = Base::xValue().array();
-        auto const yValue = Base::yValue();
-        if constexpr (!Base::hasOperandX) {
-            return yDeriv(xArray, yValue) * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xDeriv(xArray, yValue) * Base::xPushForward();
+        auto const xArray = Op::xValue().array();
+        auto const yValue = Op::yValue();
+        if constexpr (!Op::hasOperandX) {
+            return yDeriv(xArray, yValue) * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xDeriv(xArray, yValue) * Op::xPushForward();
         } else {
-            return xDeriv(xArray, yValue) * Base::xPushForward()
-                 + yDeriv(xArray, yValue) * Base::yPushForward();
+            return xDeriv(xArray, yValue) * Op::xPushForward()
+                 + yDeriv(xArray, yValue) * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const xArray = Base::xValue().array();
-        auto const yValue = Base::yValue();
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xDeriv(xArray, yValue));
+        auto const xArray = Op::xValue().array();
+        auto const yValue = Op::yValue();
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xDeriv(xArray, yValue));
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * yDeriv(xArray, yValue));
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * yDeriv(xArray, yValue));
         }
     }
 

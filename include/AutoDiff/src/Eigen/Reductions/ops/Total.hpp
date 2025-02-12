@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,26 +9,26 @@
 namespace AutoDiff::EigenAD {
 
 template <typename X>
-class Total : public UnaryOperation<Total<X>, X> {
+class Total : public Expression<Total<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Total<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().sum();
+        return Op::xValue().sum();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return Base::xPushForward().colwise().sum();
+        return Op::xPushForward().colwise().sum();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const size = Base::xValue().size();
-        Base::xPullBack(derivative.replicate(1, size));
+        auto const size = Op::xValue().size();
+        Op::xPullBack(derivative.replicate(1, size));
     }
 };
 

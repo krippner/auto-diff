@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,27 +9,27 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Tanh : public UnaryOperation<Tanh<X>, X> {
+class Tanh : public Expression<Tanh<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Tanh<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return std::tanh(Base::xValue());
+        return std::tanh(Op::xValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const& tanh_x = std::tanh(Base::xValue());
-        return (1 - tanh_x * tanh_x) * Base::xPushForward();
+        auto const& tanh_x = std::tanh(Op::xValue());
+        return (1 - tanh_x * tanh_x) * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const& tanh_x = std::tanh(Base::xValue());
-        Base::xPullBack(derivative * (1 - tanh_x * tanh_x));
+        auto const& tanh_x = std::tanh(Op::xValue());
+        Op::xPullBack(derivative * (1 - tanh_x * tanh_x));
     }
 };
 

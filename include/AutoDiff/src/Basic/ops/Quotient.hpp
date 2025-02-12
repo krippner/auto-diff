@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,44 +9,42 @@
 namespace AutoDiff::Basic {
 
 template <typename X, typename Y>
-class Quotient : public BinaryOperation<Quotient<X, Y>, X, Y> {
+class Quotient : public Expression<Quotient<X, Y>>,
+                 public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Quotient<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue() / Base::yValue();
+        return Op::xValue() / Op::yValue();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const& yValue = Base::yValue();
+        auto const& yVal = Op::yValue();
 
-        if constexpr (!Base::hasOperandX) {
-            auto const& xValue = Base::xValue();
-            return -xValue * Base::yPushForward() / (yValue * yValue);
-        } else if constexpr (!Base::hasOperandY) {
-            return Base::xPushForward() / yValue;
+        if constexpr (!Op::hasOperandX) {
+            return -(Op::xValue() * Op::yPushForward()) / (yVal * yVal);
+        } else if constexpr (!Op::hasOperandY) {
+            return Op::xPushForward() / yVal;
         } else {
-            auto const& xValue = Base::xValue();
-            return (Base::xPushForward()
-                       - xValue / yValue * Base::yPushForward())
-                 / yValue;
+            return (Op::xPushForward()
+                       - (Op::xValue() / yVal) * Op::yPushForward())
+                 / yVal;
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const& yValue = Base::yValue();
+        auto const& yVal = Op::yValue();
 
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative / yValue);
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative / yVal);
         }
-        if constexpr (Base::hasOperandY) {
-            auto const& xValue = Base::xValue();
-            Base::yPullBack(derivative * (-xValue / (yValue * yValue)));
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * (-Op::xValue() / (yVal * yVal)));
         }
     }
 };

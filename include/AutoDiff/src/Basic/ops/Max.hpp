@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,27 +9,27 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Max : public UnaryOperation<Max<X>, X> {
+class Max : public Expression<Max<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Max<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        auto const& xValue = Base::xValue();
-        return xValue * (xValue > 0);
+        auto const& val = Op::xValue();
+        return val * (val > 0);
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return Base::xPushForward() * (Base::xValue() > 0);
+        return Op::xPushForward() * (Op::xValue() > 0);
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if (Base::xValue() > 0) {
-            Base::xPullBack(derivative);
+        if (Op::xValue() > 0) {
+            Op::xPullBack(derivative);
         }
     }
 };

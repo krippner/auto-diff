@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -13,7 +13,7 @@ namespace AutoDiff {
 
 namespace internal {
 
-    class Node;
+    class Node; // for function parameter
 
 } // namespace internal
 
@@ -35,14 +35,6 @@ namespace internal {
 template <typename Derived>
 class Expression {
 public:
-    ~Expression() = default;
-
-    Expression(Expression const&)     = default;
-    Expression(Expression&&) noexcept = default;
-
-    auto operator=(Expression const&) -> Expression&     = default;
-    auto operator=(Expression&&) noexcept -> Expression& = default;
-
     /**
      * @brief Get a reference to the derived object.
      */
@@ -123,13 +115,18 @@ public:
      */
     void _releaseCache() { derived()._releaseCacheImpl(); }
 
-protected:
-    // only derived classes can be instantiated
-    Expression()
-    {
-        static_assert(std::is_base_of_v<Expression<Derived>, Derived>,
-            "Derived MUST DERIVE FROM Expression<Derived>");
-    }
+private:
+    friend Derived;
+
+    Expression() = default;
+
+    ~Expression() = default;
+
+    Expression(Expression const&)     = default;
+    Expression(Expression&&) noexcept = default;
+
+    auto operator=(Expression const&) -> Expression&     = default;
+    auto operator=(Expression&&) noexcept -> Expression& = default;
 };
 
 /**

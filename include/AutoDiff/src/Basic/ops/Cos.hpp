@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Cos : public UnaryOperation<Cos<X>, X> {
+class Cos : public Expression<Cos<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Cos<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return std::cos(Base::xValue());
+        return std::cos(Op::xValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return -std::sin(Base::xValue()) * Base::xPushForward();
+        return -std::sin(Op::xValue()) * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * (-std::sin(Base::xValue())));
+        Op::xPullBack(derivative * (-std::sin(Op::xValue())));
     }
 };
 

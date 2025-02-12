@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,26 @@
 namespace AutoDiff::EigenAD {
 
 template <typename X, typename Y>
-class MatrixProduct : public BinaryOperation<MatrixProduct<X, Y>, X, Y> {
+class MatrixProduct : public Expression<MatrixProduct<X, Y>>,
+                      public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<MatrixProduct<X, Y>, X, Y>;
-    using Base::Base;
-    using typename Base::Derivative;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
+    using typename Op::Derivative;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue() * Base::yValue();
+        return Op::xValue() * Op::yValue();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> Derivative
     {
-        auto const& xValue = Base::xValue();
-        auto const& yValue = Base::yValue();
+        auto const& xValue = Op::xValue();
+        auto const& yValue = Op::yValue();
         Derivative deriv;
 
-        if constexpr (!Base::hasOperandX) {
-            auto const& yDerivative = Base::yPushForward();
+        if constexpr (!Op::hasOperandX) {
+            auto const& yDerivative = Op::yPushForward();
             auto const derivCols    = yDerivative.cols();
             deriv.resize(xValue.rows() * yValue.cols(), derivCols);
             for (std::ptrdiff_t j = 0; j != derivCols; ++j) {
@@ -36,8 +37,8 @@ public:
                                     yValue.rows(), yValue.cols()))
                                    .reshaped();
             }
-        } else if constexpr (!Base::hasOperandY) {
-            auto const& xDerivative = Base::xPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            auto const& xDerivative = Op::xPushForward();
             auto const derivCols    = xDerivative.cols();
             deriv.resize(xValue.rows() * yValue.cols(), derivCols);
             for (std::ptrdiff_t j = 0; j != derivCols; ++j) {
@@ -47,8 +48,8 @@ public:
                           .reshaped();
             }
         } else {
-            auto const& xDerivative = Base::xPushForward();
-            auto const& yDerivative = Base::yPushForward();
+            auto const& xDerivative = Op::xPushForward();
+            auto const& yDerivative = Op::yPushForward();
             auto const derivCols = xDerivative.cols(); // = yDerivative.cols()
             deriv.resize(xValue.rows() * yValue.cols(), derivCols);
             for (std::ptrdiff_t j = 0; j != derivCols; ++j) {
@@ -70,27 +71,27 @@ public:
     template <typename OtherDerivative>
     void _pullBackImpl(OtherDerivative const& derivative)
     {
-        auto const& xValue   = Base::xValue();
-        auto const& yValue   = Base::yValue();
+        auto const& xValue   = Op::xValue();
+        auto const& yValue   = Op::yValue();
         auto const derivRows = derivative.rows();
 
-        if constexpr (Base::hasOperandX) {
+        if constexpr (Op::hasOperandX) {
             auto deriv = Derivative(derivRows, xValue.size());
             for (std::ptrdiff_t i = 0; i != derivRows; ++i) {
                 auto const matricized
                     = derivative.row(i).reshaped(xValue.rows(), yValue.cols());
                 deriv.row(i) = (matricized * yValue.transpose()).reshaped();
             }
-            Base::xPullBack(deriv);
+            Op::xPullBack(deriv);
         }
-        if constexpr (Base::hasOperandY) {
+        if constexpr (Op::hasOperandY) {
             auto deriv = Derivative(derivRows, yValue.size());
             for (std::ptrdiff_t i = 0; i != derivRows; ++i) {
                 auto const matricized
                     = derivative.row(i).reshaped(xValue.rows(), yValue.cols());
                 deriv.row(i) = (xValue.transpose() * matricized).reshaped();
             }
-            Base::yPullBack(deriv);
+            Op::yPullBack(deriv);
         }
     }
 };

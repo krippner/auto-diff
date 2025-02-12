@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,27 +9,27 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Square : public UnaryOperation<Square<X>, X> {
+class Square : public Expression<Square<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Square<X>, X>;
-    using Base::Base;
-    using Base::operator=;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
+    using Op::operator=;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        auto const& value = Base::xValue();
+        auto const& value = Op::xValue();
         return value * value;
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return Base::xValue() * 2 * Base::xPushForward();
+        return Op::xValue() * 2 * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * Base::xValue() * 2);
+        Op::xPullBack(derivative * Op::xValue() * 2);
     }
 };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,36 +9,36 @@
 namespace AutoDiff::Basic {
 
 template <typename X, typename Y>
-class Product : public BinaryOperation<Product<X, Y>, X, Y> {
+class Product : public Expression<Product<X, Y>>, public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Product<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue() * Base::yValue();
+        return Op::xValue() * Op::yValue();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        if constexpr (!Base::hasOperandX) {
-            return Base::xValue() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return Base::yValue() * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return Op::xValue() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return Op::yValue() * Op::xPushForward();
         } else {
-            return Base::yValue() * Base::xPushForward()
-                 + Base::xValue() * Base::yPushForward();
+            return Op::yValue() * Op::xPushForward()
+                 + Op::xValue() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * Base::yValue());
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * Op::yValue());
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * Base::xValue());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * Op::xValue());
         }
     }
 };

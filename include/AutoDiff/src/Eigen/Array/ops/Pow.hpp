@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,42 +9,42 @@
 namespace AutoDiff::EigenAD::Array {
 
 template <typename X, typename Y>
-class Pow : public BinaryOperation<Pow<X, Y>, X, Y> {
+class Pow : public Expression<Pow<X, Y>>, public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Pow<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().pow(Base::yValue());
+        return Op::xValue().pow(Op::yValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const& xValue = Base::xValue();
-        auto const& yValue = Base::yValue();
+        auto const& xValue = Op::xValue();
+        auto const& yValue = Op::yValue();
 
-        if constexpr (!Base::hasOperandX) {
-            return xValue.pow(yValue) * xValue.log() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xValue.pow(yValue - 1) * yValue * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return xValue.pow(yValue) * xValue.log() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xValue.pow(yValue - 1) * yValue * Op::xPushForward();
         } else {
-            return xValue.pow(yValue - 1) * yValue * Base::xPushForward()
-                 + xValue.pow(yValue) * xValue.log() * Base::yPushForward();
+            return xValue.pow(yValue - 1) * yValue * Op::xPushForward()
+                 + xValue.pow(yValue) * xValue.log() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const& xValue = Base::xValue();
-        auto const& yValue = Base::yValue();
+        auto const& xValue = Op::xValue();
+        auto const& yValue = Op::yValue();
 
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xValue.pow(yValue - 1) * yValue);
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xValue.pow(yValue - 1) * yValue);
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * xValue.pow(yValue) * xValue.log());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * xValue.pow(yValue) * xValue.log());
         }
     }
 };

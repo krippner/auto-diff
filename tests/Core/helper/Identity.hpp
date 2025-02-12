@@ -13,10 +13,11 @@ namespace test {
  * @tparam X           the type of the operand
  */
 template <typename X>
-class Identity : public AutoDiff::UnaryOperation<Identity<X>, X> {
+class Identity : public AutoDiff::Expression<Identity<X>>,
+                 public AutoDiff::UnaryOperation<X> {
 public:
-    using Base = AutoDiff::UnaryOperation<Identity<X>, X>;
-    using Base::Base;
+    using Op = AutoDiff::UnaryOperation<X>;
+    using Op::Op;
 
     auto _valueImpl() -> decltype(auto) { return this->xValue(); }
 
@@ -36,13 +37,14 @@ auto identity(AutoDiff::Expression<X> const& x) -> decltype(auto)
 }
 
 template <typename X>
-class IdentityWithId : public AutoDiff::UnaryOperation<IdentityWithId<X>, X> {
+class IdentityWithId : public AutoDiff::Expression<IdentityWithId<X>>,
+                       public AutoDiff::UnaryOperation<X> {
 public:
-    using Base = AutoDiff::UnaryOperation<IdentityWithId<X>, X>;
+    using Op = AutoDiff::UnaryOperation<X>;
 
     IdentityWithId(
         AutoDiff::Expression<X> const& x, int id, std::vector<int>* dtorSeqPtr)
-        : Base{x.derived()}
+        : Op{x.derived()}
         , mId{id}
         , mDtorSeqPtr{dtorSeqPtr}
     {

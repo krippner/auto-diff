@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::EigenAD::CWise {
 
 template <typename X>
-class Exp : public UnaryOperation<Exp<X>, X> {
+class Exp : public Expression<Exp<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Exp<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().array().exp().matrix();
+        return Op::xValue().array().exp().matrix();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return _valueImpl().reshaped().asDiagonal() * Base::xPushForward();
+        return _valueImpl().reshaped().asDiagonal() * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * _valueImpl().reshaped().asDiagonal());
+        Op::xPullBack(derivative * _valueImpl().reshaped().asDiagonal());
     }
 };
 

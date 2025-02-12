@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,46 +9,47 @@
 namespace AutoDiff::EigenAD::Array {
 
 template <typename X, typename Y>
-class Quotient : public BinaryOperation<Quotient<X, Y>, X, Y> {
+class Quotient : public Expression<Quotient<X, Y>>,
+                 public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Quotient<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue() / Base::yValue();
+        return Op::xValue() / Op::yValue();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        if constexpr (!Base::hasOperandX) {
-            return yDeriv() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xDeriv() * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return yDeriv() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xDeriv() * Op::xPushForward();
         } else {
-            return xDeriv() * Base::xPushForward()
-                 + yDeriv() * Base::yPushForward();
+            return xDeriv() * Op::xPushForward()
+                 + yDeriv() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xDeriv());
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xDeriv());
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * yDeriv());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * yDeriv());
         }
     }
 
 private:
-    [[nodiscard]] auto xDeriv() -> decltype(auto) { return 1 / Base::yValue(); }
+    [[nodiscard]] auto xDeriv() -> decltype(auto) { return 1 / Op::yValue(); }
 
     [[nodiscard]] auto yDeriv() -> decltype(auto)
     {
-        auto const& yValue = Base::yValue();
-        return -Base::xValue() / (yValue * yValue);
+        auto const& yValue = Op::yValue();
+        return -Op::xValue() / (yValue * yValue);
     }
 };
 

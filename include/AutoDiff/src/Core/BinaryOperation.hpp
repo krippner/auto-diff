@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -18,29 +18,54 @@ namespace AutoDiff {
  * @class BinaryOperation
  * @brief Auxiliary base class for operations with two operands.
  *
+ * This class augments the derived class with the two operands and provides
+ * a constructor that the derived class can reuse e.g. "using Op::Op".
  * One of the operands may be a literal instead of an expression.
+ * Here is a typical example of a derived class:
+ * @code{.cpp}
+ * template <typename X, typename Y>
+ * class Sum : public Expression<Sum<X, Y>>, public BinaryOperation<X, Y> {
+ * public:
+ *   using Op = BinaryOperation<X, Y>;
+ *   using Op::Op; // reuse the constructor
  *
- * A subclass might reuse the constructor "using Base::Base".
- * The derived class must implement the public functions
- * @c _valueImpl       (returning its value),
- * @c _pushForwardImpl (returning the pushforward of the tangent vector), and
- * @c _pullBackImpl    (pushing back the gradient).
- * For details, see the @c Expression class.
+ *   auto _valueImpl() -> decltype(auto) {
+ *     return Op::xValue() + Op::yValue(); // access the operand values
+ *   }
  *
- * @tparam Derived  the derived class of the expression, e.g. Basic::Sum<X, Y>
+ *   auto _pushForwardImpl() -> decltype(auto) {
+ *     if constexpr (!Op::hasOperandX) { // if the 1st operand is a literal
+ *       return Op::yPushForward(); // access the pushforward by 2nd operand
+ *     } else if constexpr (!Op::hasOperandY) { // if 2nd operand is a literal
+ *       return Op::xPushForward(); // access the pushforward by 1st operand
+ *     } else { // if both operands are expressions
+ *       return Op::xPushForward() + Op::yPushForward();
+ *     }
+ *   }
+ *
+ *   void _pullBackImpl(Derivative const& derivative) {
+ *     if constexpr (Op::hasOperandX) { // if the 1st operand is an expression
+ *       Op::xPullBack(derivative); // pull back the gradient by 1st operand
+ *     }
+ *     if constexpr (Op::hasOperandY) { // if the 2nd operand is an expression
+ *       Op::yPullBack(derivative); // pull back the gradient by 2nd operand
+ *     }
+ *   }
+ * };
+ * @endcode
+ *
  * @tparam X        the type of literal or expression of the first operand
  * @tparam Y        the type of literal or expression of the second operand
  */
-template <typename Derived, typename X, typename Y, typename = void>
+template <typename X, typename Y, typename = void>
 class BinaryOperation;
 
 /**
  * @brief Specialization for operands (Expression, Expression).
  */
-template <typename Derived, typename X, typename Y>
-class BinaryOperation<Derived, X, Y,
-    std::enable_if_t<isExpression_v<X> && isExpression_v<Y>>>
-    : public Expression<Derived> {
+template <typename X, typename Y>
+class BinaryOperation<X, Y,
+    std::enable_if_t<isExpression_v<X> && isExpression_v<Y>>> {
 public:
     using Derivative = typename X::Derivative; // propagate the derivative type
 
@@ -60,8 +85,6 @@ public:
         static_assert(std::is_same_v<Derivative, typename Y::Derivative>,
             "OPERANDS MUST HAVE THE SAME DERIVATIVE TYPE");
     }
-
-    // Expression implementation ===============================================
 
     void _transferChildrenToImpl(internal::Node& node)
     {
@@ -132,12 +155,13 @@ private:
 /**
  * @brief Specialization for operands (literal, Expression).
  */
-template <typename Derived, typename XValue, typename Y>
-class BinaryOperation<Derived, XValue, Y,
+template <typename XValue, typename Y>
+class BinaryOperation<XValue, Y,
     std::enable_if_t<!isExpression_v<XValue> && isExpression_v<Y>>>
-    : public UnaryOperation<Derived, Y> {
+    : public UnaryOperation<Y> {
+    using Base = UnaryOperation<Y>;
+
 public:
-    using Base = UnaryOperation<Derived, Y>;
     using typename Base::Derivative;
 
     BinaryOperation(XValue xValue, Expression<Y> const& operandY)
@@ -177,12 +201,13 @@ private:
 /**
  * @brief Specialization for operands (Expression, literal).
  */
-template <typename Derived, typename X, typename YValue>
-class BinaryOperation<Derived, X, YValue,
+template <typename X, typename YValue>
+class BinaryOperation<X, YValue,
     std::enable_if_t<isExpression_v<X> && !isExpression_v<YValue>>>
-    : public UnaryOperation<Derived, X> {
+    : public UnaryOperation<X> {
+    using Base = UnaryOperation<X>;
+
 public:
-    using Base = UnaryOperation<Derived, X>;
     using typename Base::Derivative;
 
     BinaryOperation(Expression<X> const& operandX, YValue yValue)

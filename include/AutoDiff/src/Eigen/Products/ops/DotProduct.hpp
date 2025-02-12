@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,36 +9,37 @@
 namespace AutoDiff::EigenAD {
 
 template <typename X, typename Y>
-class DotProduct : public BinaryOperation<DotProduct<X, Y>, X, Y> {
+class DotProduct : public Expression<DotProduct<X, Y>>,
+                   public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<DotProduct<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().dot(Base::yValue());
+        return Op::xValue().dot(Op::yValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        if constexpr (!Base::hasOperandX) {
-            return Base::xValue().transpose() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return Base::yValue().transpose() * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return Op::xValue().transpose() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return Op::yValue().transpose() * Op::xPushForward();
         } else {
-            return Base::yValue().transpose() * Base::xPushForward()
-                 + Base::xValue().transpose() * Base::yPushForward();
+            return Op::yValue().transpose() * Op::xPushForward()
+                 + Op::xValue().transpose() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * Base::yValue().transpose());
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * Op::yValue().transpose());
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * Base::xValue().transpose());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * Op::xValue().transpose());
         }
     }
 };

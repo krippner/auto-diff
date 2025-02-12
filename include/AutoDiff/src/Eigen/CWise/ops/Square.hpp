@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,28 +9,26 @@
 namespace AutoDiff::EigenAD::CWise {
 
 template <typename X>
-class Square : public UnaryOperation<Square<X>, X> {
+class Square : public Expression<Square<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Square<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        auto const& xValue = Base::xValue();
+        auto const& xValue = Op::xValue();
         return xValue.cwiseProduct(xValue);
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return 2 * Base::xValue().reshaped().asDiagonal()
-             * Base::xPushForward();
+        return 2 * Op::xValue().reshaped().asDiagonal() * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(
-            derivative * 2 * Base::xValue().reshaped().asDiagonal());
+        Op::xPullBack(derivative * 2 * Op::xValue().reshaped().asDiagonal());
     }
 };
 

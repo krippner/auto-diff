@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::EigenAD::Array {
 
 template <typename X>
-class Cos : public UnaryOperation<Cos<X>, X> {
+class Cos : public Expression<Cos<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Cos<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().cos();
+        return Op::xValue().cos();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return (-Base::xValue()).sin() * Base::xPushForward();
+        return (-Op::xValue()).sin() * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * (-Base::xValue()).sin());
+        Op::xPullBack(derivative * (-Op::xValue()).sin());
     }
 };
 

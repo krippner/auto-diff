@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,27 +9,27 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class ArcCos : public UnaryOperation<ArcCos<X>, X> {
+class ArcCos : public Expression<ArcCos<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<ArcCos<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return std::acos(Base::xValue());
+        return std::acos(Op::xValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const& x = Base::xValue();
-        return -std::pow(1 - x * x, -0.5) * Base::xPushForward();
+        auto const& x = Op::xValue();
+        return -std::pow(1 - x * x, -0.5) * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const& x = Base::xValue();
-        Base::xPullBack(derivative * (-std::pow(1 - x * x, -0.5)));
+        auto const& x = Op::xValue();
+        Op::xPullBack(derivative * (-std::pow(1 - x * x, -0.5)));
     }
 };
 

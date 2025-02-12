@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Exp : public UnaryOperation<Exp<X>, X> {
+class Exp : public Expression<Exp<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Exp<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return std::exp(Base::xValue());
+        return std::exp(Op::xValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return std::exp(Base::xValue()) * Base::xPushForward();
+        return std::exp(Op::xValue()) * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * std::exp(Base::xValue()));
+        Op::xPullBack(derivative * std::exp(Op::xValue()));
     }
 };
 

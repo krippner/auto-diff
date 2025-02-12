@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::EigenAD::Array {
 
 template <typename X>
-class Log : public UnaryOperation<Log<X>, X> {
+class Log : public Expression<Log<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Log<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().log();
+        return Op::xValue().log();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return Base::xPushForward() / Base::xValue();
+        return Op::xPushForward() / Op::xValue();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative / Base::xValue());
+        Op::xPullBack(derivative / Op::xValue());
     }
 };
 

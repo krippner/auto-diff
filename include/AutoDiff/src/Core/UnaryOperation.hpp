@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -14,18 +14,35 @@ namespace AutoDiff {
  * @class UnaryOperation
  * @brief Auxiliary base class for operations depending on one other expression.
  *
- * A subclass can simply reuse the constructor "using Base::Base".
- * The derived class must implement the public functions
- * @c _valueImpl       (returning its value),
- * @c _pushForwardImpl (returning the pushforward of the tangent vector), and
- * @c _pullBackImpl    (pushing back the gradient).
- * For details, see the @c Expression class.
+ * This class augments the derived class with the operand and provides
+ * a constructor that the derived class can reuse e.g. "using Op::Op".
+ * Here is a typical example of a derived class:
+ * @code{.cpp}
+ * template <typename X>
+ * class Negation : public Expression<Negation<X>>, public UnaryOperation<X> {
+ * public:
+ *   using Op = UnaryOperation<X>;
+ *   using Op::Op; // reuse the constructor
  *
- * @tparam Derived  the derived class of the expression, e.g. Basic::Exp<X>
+ *   auto _valueImpl() -> decltype(auto) {
+ *     return -Op::xValue(); // access the operand value
+ *   }
+ *
+ *   auto _pushForwardImpl() -> decltype(auto) {
+ *     return -Op::xPushForward(); // access the pushforward by the operand
+ *   }
+ *
+ *   template <typename Derivative>
+ *   void _pullBackImpl(Derivative const& derivative) {
+ *     Op::xPullBack(-derivative); // pull back the gradient
+ *   }
+ * };
+ * @endcode
+ *
  * @tparam X        the derived class of the operand
  */
-template <typename Derived, typename X>
-class UnaryOperation : public Expression<Derived> {
+template <typename X>
+class UnaryOperation {
 public:
     using Derivative = typename X::Derivative; // propagate the derivative type
 
@@ -38,8 +55,6 @@ public:
         : mOperand{operand.derived()}
     {
     }
-
-    // Expression implementation ===============================================
 
     void _transferChildrenToImpl(internal::Node& node)
     {

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,48 +9,49 @@
 namespace AutoDiff::EigenAD::CWise {
 
 template <typename X, typename Y>
-class Quotient : public BinaryOperation<Quotient<X, Y>, X, Y> {
+class Quotient : public Expression<Quotient<X, Y>>,
+                 public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<Quotient<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue().cwiseQuotient(Base::yValue());
+        return Op::xValue().cwiseQuotient(Op::yValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        if constexpr (!Base::hasOperandX) {
-            return yDeriv() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xDeriv() * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return yDeriv() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xDeriv() * Op::xPushForward();
         } else {
-            return xDeriv() * Base::xPushForward()
-                 + yDeriv() * Base::yPushForward();
+            return xDeriv() * Op::xPushForward()
+                 + yDeriv() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xDeriv());
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xDeriv());
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * yDeriv());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * yDeriv());
         }
     }
 
 private:
     [[nodiscard]] auto xDeriv() -> decltype(auto)
     {
-        return Base::yValue().reshaped().asDiagonal().inverse();
+        return Op::yValue().reshaped().asDiagonal().inverse();
     }
 
     [[nodiscard]] auto yDeriv() -> decltype(auto)
     {
-        return (-Base::xValue().array() / Base::yValue().array().square())
+        return (-Op::xValue().array() / Op::yValue().array().square())
             .matrix()
             .reshaped()
             .asDiagonal();
@@ -58,28 +59,29 @@ private:
 };
 
 template <typename X, typename Y>
-class QuotientScalar : public BinaryOperation<QuotientScalar<X, Y>, X, Y> {
+class QuotientScalar : public Expression<QuotientScalar<X, Y>>,
+                       public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<QuotientScalar<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return Base::xValue() / Base::yValue();
+        return Op::xValue() / Op::yValue();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        auto const& yValue = Base::yValue();
+        auto const& yValue = Op::yValue();
 
-        if constexpr (!Base::hasOperandX) {
-            return (-Base::xValue().reshaped()) * Base::yPushForward()
+        if constexpr (!Op::hasOperandX) {
+            return (-Op::xValue().reshaped()) * Op::yPushForward()
                  / (yValue * yValue);
-        } else if constexpr (!Base::hasOperandY) {
-            return Base::xPushForward() / yValue;
+        } else if constexpr (!Op::hasOperandY) {
+            return Op::xPushForward() / yValue;
         } else {
-            return Base::xPushForward() / yValue
-                 - Base::xValue().reshaped() * Base::yPushForward()
+            return Op::xPushForward() / yValue
+                 - Op::xValue().reshaped() * Op::yPushForward()
                        / (yValue * yValue);
         }
     }
@@ -87,61 +89,61 @@ public:
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        auto const& yValue = Base::yValue();
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative / yValue);
+        auto const& yValue = Op::yValue();
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative / yValue);
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(
-                derivative * (-Base::xValue().reshaped()) / (yValue * yValue));
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(
+                derivative * (-Op::xValue().reshaped()) / (yValue * yValue));
         }
     }
 };
 
 template <typename X, typename Y>
-class QuotientScalarMatrix
-    : public BinaryOperation<QuotientScalarMatrix<X, Y>, X, Y> {
+class QuotientScalarMatrix : public Expression<QuotientScalarMatrix<X, Y>>,
+                             public BinaryOperation<X, Y> {
 public:
-    using Base = BinaryOperation<QuotientScalarMatrix<X, Y>, X, Y>;
-    using Base::Base;
+    using Op = BinaryOperation<X, Y>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return (Base::xValue() / Base::yValue().array()).matrix();
+        return (Op::xValue() / Op::yValue().array()).matrix();
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        if constexpr (!Base::hasOperandX) {
-            return yDeriv() * Base::yPushForward();
-        } else if constexpr (!Base::hasOperandY) {
-            return xDeriv() * Base::xPushForward();
+        if constexpr (!Op::hasOperandX) {
+            return yDeriv() * Op::yPushForward();
+        } else if constexpr (!Op::hasOperandY) {
+            return xDeriv() * Op::xPushForward();
         } else {
-            return xDeriv() * Base::xPushForward()
-                 + yDeriv() * Base::yPushForward();
+            return xDeriv() * Op::xPushForward()
+                 + yDeriv() * Op::yPushForward();
         }
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        if constexpr (Base::hasOperandX) {
-            Base::xPullBack(derivative * xDeriv());
+        if constexpr (Op::hasOperandX) {
+            Op::xPullBack(derivative * xDeriv());
         }
-        if constexpr (Base::hasOperandY) {
-            Base::yPullBack(derivative * yDeriv());
+        if constexpr (Op::hasOperandY) {
+            Op::yPullBack(derivative * yDeriv());
         }
     }
 
 private:
     [[nodiscard]] auto xDeriv() -> decltype(auto)
     {
-        return Base::yValue().cwiseInverse().reshaped();
+        return Op::yValue().cwiseInverse().reshaped();
     }
 
     [[nodiscard]] auto yDeriv() -> decltype(auto)
     {
-        return (-Base::xValue() / Base::yValue().array().square())
+        return (-Op::xValue() / Op::yValue().array().square())
             .matrix()
             .reshaped()
             .asDiagonal();

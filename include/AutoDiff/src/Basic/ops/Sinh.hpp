@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,25 +9,25 @@
 namespace AutoDiff::Basic {
 
 template <typename X>
-class Sinh : public UnaryOperation<Sinh<X>, X> {
+class Sinh : public Expression<Sinh<X>>, public UnaryOperation<X> {
 public:
-    using Base = UnaryOperation<Sinh<X>, X>;
-    using Base::Base;
+    using Op = UnaryOperation<X>;
+    using Op::Op;
 
     [[nodiscard]] auto _valueImpl() -> decltype(auto)
     {
-        return std::sinh(Base::xValue());
+        return std::sinh(Op::xValue());
     }
 
     [[nodiscard]] auto _pushForwardImpl() -> decltype(auto)
     {
-        return std::cosh(Base::xValue()) * Base::xPushForward();
+        return std::cosh(Op::xValue()) * Op::xPushForward();
     }
 
     template <typename Derivative>
     void _pullBackImpl(Derivative const& derivative)
     {
-        Base::xPullBack(derivative * std::cosh(Base::xValue()));
+        Op::xPullBack(derivative * std::cosh(Op::xValue()));
     }
 };
 
