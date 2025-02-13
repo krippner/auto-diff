@@ -2,14 +2,16 @@ name: Code Coverage
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'include/**'
-      - 'tests/**'
-      - 'CMakeLists.txt'
-      - 'CMakePresets.json'
-      - '**conanfile.py'
-      - '.github/workflows/coverage.yml'
-  pull_request:    
+      - "include/**"
+      - "tests/**"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - "**conanfile.py"
+      - ".github/workflows/coverage.yml"
+  pull_request:
 
 jobs:
   coverage:
@@ -20,7 +22,6 @@ jobs:
         working-directory: ${{github.workspace}}
 
     steps:
-
       - uses: actions/checkout@v4
         with:
           ref: main
@@ -33,7 +34,7 @@ jobs:
 
       - name: Install Conan
         uses: turtlebrowser/get-conan@main
-    
+
       - name: Configure Conan
         run: conan profile detect --force
 
@@ -54,7 +55,7 @@ jobs:
 
       - name: Build
         run: cmake --build build/Debug
-    
+
       - name: Test
         run: ctest --test-dir build/Debug
 
