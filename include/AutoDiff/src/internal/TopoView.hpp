@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -102,14 +102,14 @@ public:
         using reference         = value_type&;
 
         /**
-         * @brief Create an invalid iterator.
+         * @brief Create an invalid iterator, which serves as the end iterator.
          */
         Iterator() = default;
 
         /**
          * @brief Create an iterator pointing to the first node of the view.
          *
-         * Creates an invalid iterator if the view is empty.
+         * Creates an invalid (i.e. end) iterator if the view is empty.
          *
          * @param  view        the topologically ordered view
          */
@@ -136,9 +136,12 @@ public:
             return mCurrentValue;
         }
 
+        /**
+         * @brief Returns true as long as the iterator is valid.
+         */
         friend auto operator!=(Iterator const& a, Iterator const& b) -> bool
         {
-            return a.mPath != b.mPath;
+            return !(a.mPath.isEmpty() && b.mPath.isEmpty());
         }
 
         /**

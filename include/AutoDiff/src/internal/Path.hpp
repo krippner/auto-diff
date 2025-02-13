@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -36,11 +36,6 @@ public:
  */
 class Path {
 public:
-    friend auto operator!=(Path const& a, Path const& b) -> bool
-    {
-        return a.mStack.size() != b.mStack.size();
-    }
-
     void tryAdd(Node* node)
     {
         auto const [_, inserted] = mSet.insert(node);
@@ -55,7 +50,7 @@ public:
     [[nodiscard]] auto size() const -> std::size_t { return mStack.size(); }
 
     // causes undefined behaviour if path is empty
-    [[nodiscard]] auto head() -> Node* { return mStack.top().node; }
+    [[nodiscard]] auto head() const -> Node* { return mStack.top().node; }
 
     // causes undefined behaviour if path is empty
     void removeHead()
