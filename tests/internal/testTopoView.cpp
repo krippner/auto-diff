@@ -25,7 +25,7 @@ public:
 
     // needed for test::Graph
     NodeImpl(int id, std::vector<int>* /*dtorSeqPtr*/)
-        : mId{id} {};
+        : mId{id} { };
 
     ~NodeImpl() override = default;
 
@@ -48,7 +48,7 @@ using Graph    = test::Graph<test::TopoView::NodeImpl>;
 using AutoDiff::internal::CyclicGraphError;
 
 template <typename... Nodes>
-auto rootSet(std::shared_ptr<Nodes>... nodePtrs)
+auto rootSet(std::shared_ptr<Nodes> const&... nodePtrs)
 {
     typename TopoView::Roots roots{};
     (roots.obj.insert(nodePtrs.get()), ...);
@@ -56,7 +56,7 @@ auto rootSet(std::shared_ptr<Nodes>... nodePtrs)
 }
 
 template <typename... Nodes>
-auto leafSet(std::shared_ptr<Nodes>... nodePtrs)
+auto leafSet(std::shared_ptr<Nodes> const&... nodePtrs)
 {
     typename TopoView::Leaves leaves{};
     (leaves.obj.insert(nodePtrs.get()), ...);
