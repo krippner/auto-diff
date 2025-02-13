@@ -22,8 +22,10 @@ auto for_each_in_range(Range&& range, UnaryFunction fct)
 {
     using std::begin;
     using std::end;
-    return std::for_each(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), fct);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::for_each(begin(r), end(r), fct);
 }
 
 template <typename Range, typename UnaryFunction>
@@ -31,8 +33,10 @@ auto for_each_in_reversed_range(Range&& range, UnaryFunction fct)
 {
     using std::rbegin;
     using std::rend;
-    return std::for_each(rbegin(std::forward<Range>(range)),
-        rend(std::forward<Range>(range)), fct);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::for_each(rbegin(r), rend(r), fct);
 }
 
 template <typename Range, typename UnaryFunction>
@@ -40,8 +44,10 @@ auto all_of_range(Range&& range, UnaryFunction fct)
 {
     using std::begin;
     using std::end;
-    return std::all_of(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), fct);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::all_of(begin(r), end(r), fct);
 }
 
 template <typename Range, typename UnaryFunction>
@@ -49,8 +55,10 @@ auto any_of_range(Range&& range, UnaryFunction fct)
 {
     using std::begin;
     using std::end;
-    return std::any_of(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), fct);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::any_of(begin(r), end(r), fct);
 }
 
 template <typename Range, typename OutputIterator, typename UnaryOperation>
@@ -59,8 +67,10 @@ auto transform_range(
 {
     using std::begin;
     using std::end;
-    return std::transform(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), firstOutput, op_);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::transform(begin(r), end(r), firstOutput, op_);
 }
 
 template <typename Range, typename OutputIterator>
@@ -68,8 +78,10 @@ auto copy_range(Range&& range, OutputIterator firstOutput)
 {
     using std::begin;
     using std::end;
-    return std::copy(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), firstOutput);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::copy(begin(r), end(r), firstOutput);
 }
 
 template <typename Range, typename OutputIterator, typename UnaryPredicate>
@@ -78,8 +90,10 @@ auto copy_range_if(
 {
     using std::begin;
     using std::end;
-    return std::copy_if(begin(std::forward<Range>(range)),
-        end(std::forward<Range>(range)), firstOutput, pred);
+
+    auto&& r = std::forward<Range>(range);
+
+    return std::copy_if(begin(r), end(r), firstOutput, pred);
 }
 
 } // namespace AutoDiff::internal
