@@ -11,6 +11,7 @@ Checks: >
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-isolate-declaration,
+  -readability-math-missing-parentheses,
   -*-uppercase-literal-suffix,
   -*-avoid-do-while,
   -*-branch-clone,
