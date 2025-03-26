@@ -38,7 +38,7 @@ A mathematical function definition specifies the *domain* and *codomain* of the 
 For instance,
 
 $$
-f \colon \mathbb{R} \times \mathbb{R} \to \mathbb{R} \ ,\ (x, y) \mapsto z = x + y
+f \colon ℝ \times ℝ \to ℝ \ ,\ (x, y) \mapsto z = x + y
 $$
 
 defines a function $f$ that takes two real numbers $x$ and $y$ as input and returns their sum $z$ as output.
@@ -119,7 +119,7 @@ z(); // z = 7
 > [!IMPORTANT]
 > Ensure you evaluate a program before differentiating it. This evaluation can be done either [eagerly](expression.md#eager-evaluation) or [lazily](#evaluating-functions).
 
-A typical use case is to compute the tangent vector to a curve $\gamma \colon \mathbb{R} \to \mathbb{R}^n$.
+A typical use case is to compute the tangent vector to a curve $\gamma \colon ℝ \to ℝ^n$.
 
 ```cpp
 // Tangent vector to a circle (forward-mode differentiation)
@@ -136,14 +136,14 @@ std::cout << "dy/dt = " << d(y); // dy/dt = 1
 ```
 
 The tangent vector in the above example is a special case of the Jacobian matrix.
-In general, if your program computes a function $f \colon \mathbb{R}^m \to \mathbb{R}^n$, $x \mapsto y$, then calling `pushTangentAt(x)` computes the Jacobian matrix
+In general, if your program computes a function $f \colon ℝ^m \to ℝ^n$, $x \mapsto y$, then calling `pushTangentAt(x)` computes the Jacobian matrix
 
 $$
 J_f(x) = \begin{bmatrix}
     \frac{\partial f_1}{\partial x_1} \ \ldots\ \frac{\partial f_1}{\partial x_m} \\
     \vdots \\
     \frac{\partial f_n}{\partial x_1} \ \ldots\ \frac{\partial f_n}{\partial x_m}
-\end{bmatrix} \in \mathbb{R}^{n \times m}
+\end{bmatrix} \in ℝ^{n \times m}
 $$
 
 and stores it in `d(y)`.
@@ -184,7 +184,7 @@ std::cout << "δy =\n" << d(y) << '\n'; // δy =
 > In reverse mode, partial derivatives are accumulated in the reverse order of evaluation.
 > Use reverse mode when the number of target variables is smaller than the number of source variables.
 
-A typical use case is to compute the gradient of a scalar function $f \colon \mathbb{R}^m \to \mathbb{R}$.
+A typical use case is to compute the gradient of a scalar function $f \colon ℝ^m \to ℝ$.
 
 ```cpp
 // Gradient of the vector norm (reverse-mode differentiation)

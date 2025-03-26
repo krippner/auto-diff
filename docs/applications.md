@@ -102,7 +102,7 @@ cout << "y = " << y() << '\n'; // y = -1
 
 ## Computing the Jacobian matrix
 
-Given a function $f \colon \mathbb{R}^m \to \mathbb{R}^n$, $x \mapsto y$, the Jacobian matrix $J_f(x) \in \mathbb{R}^{n \times m}$ is defined as
+Given a function $f \colon ℝ^m \to ℝ^n$, $x \mapsto y$, the Jacobian matrix $J_f(x) \in ℝ^{n \times m}$ is defined as
 
 $$
 J_f(x) = \begin{bmatrix}
@@ -139,7 +139,7 @@ For more details on the `pullGradientAt` method, see [Reverse-mode differentiati
 
 ## Gradient computation
 
-Given a scalar function $f \colon \mathbb{R}^m \to \mathbb{R}$, $x \mapsto y$, the gradient $\nabla f(x) \in \mathbb{R}^m$ is defined as
+Given a scalar function $f \colon ℝ^m \to ℝ$, $x \mapsto y$, the gradient $\nabla f(x) \in ℝ^m$ is defined as
 
 $$
 \nabla f = \left[ \frac{\partial f}{\partial x_1}, \frac{\partial f}{\partial x_2}, \ldots \right] .
@@ -192,7 +192,7 @@ cout << "∇_y f = " << d(y) << '\n'; // ∇_y f = 1 2 3
 
 ## Jacobian-vector products
 
-Given a function $f \colon \mathbb{R}^m \to \mathbb{R}^n$, $x \mapsto y$.
+Given a function $f \colon ℝ^m \to ℝ^n$, $x \mapsto y$.
 If you are only interested in the product of the Jacobian matrix $J_f(x)$ with a given direction (tangent vector) $\delta x$,
 
 $$

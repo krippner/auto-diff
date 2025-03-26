@@ -28,7 +28,7 @@ AutoDiff::Vector3d x;
 is a smooth function
 
 $$
-x \colon M \to \mathbb{R}^3 \ ,\ p \mapsto x(p)
+x \colon M \to ℝ^3 \ ,\ p \mapsto x(p)
 $$
 
 on a smooth manifold $M$.
@@ -54,7 +54,7 @@ For instance, we can set $dx_p$ to the identity matrix.
 x.setDerivative(Eigen::Matrix3d::Identity()); // set the Jacobian matrix
 ```
 
-In the case where $M = \mathbb{R}$, the function $x$ is a curve in $\mathbb{R}^3$ parameterized by $p$.
+In the case where $M = ℝ$, the function $x$ is a curve in $ℝ^3$ parameterized by $p$.
 The derivative $dx_p$ is then a tangent vector to the curve at $x(p)$.
 
 ```cpp
@@ -79,7 +79,7 @@ AutoDiff::Vector2d y = phi(x); // expression variable
 The _expression variable_ `y` represents the composition of two functions,
 
 $$
-y = \phi\ \circ\ x \colon M \to \mathbb{R}^2,\ p \mapsto \phi(x(p))\ .
+y = \phi\ \circ\ x \colon M \to ℝ^2,\ p \mapsto \phi(x(p))\ .
 $$
 
 Like before, the variable `y` can be evaluated as function, where $p$ is omitted.
@@ -111,12 +111,12 @@ In reverse mode, the same variables are interpreted as different mathematical fu
 The output variable `y` is now the function
 
 $$
-\hat{y} \colon \mathbb{R}^2 \to N \ ,\ y(p) \mapsto q
+\hat{y} \colon ℝ^2 \to N \ ,\ y(p) \mapsto q
 $$
 
 mapping the value $y(p)$ from the forward pass into a smooth manifold $N$.
 
-In the case where $N = \mathbb{R}$, the derivative $d\hat{y}$ is a cotangent vector (aka gradient) at $y(p)$ and can be represented by a row vector.
+In the case where $N = ℝ$, the derivative $d\hat{y}$ is a cotangent vector (aka gradient) at $y(p)$ and can be represented by a row vector.
 
 ```cpp
 y.setDerivative(Eigen::RowVector2d{1, 1}); // set the cotangent vector
@@ -126,7 +126,7 @@ d(y); // returns d(ŷ) = (1, 1)
 The variable `x` is now associated with the composition
 
 $$
-\hat{x} = \hat{y} \circ \phi \colon \mathbb{R}^3 \to N \ ,\ x(p) \mapsto q
+\hat{x} = \hat{y} \circ \phi \colon ℝ^3 \to N \ ,\ x(p) \mapsto q
 $$
 
 with $x(p)$ being the input value from the forward pass.

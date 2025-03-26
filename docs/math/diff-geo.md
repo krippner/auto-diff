@@ -11,8 +11,8 @@ The article concludes with the statement that [forward- and reverse-mode AD](#fo
 
 ## Smooth manifolds
 
-A [smooth manifold](https://en.wikipedia.org/wiki/Differentiable_manifold) $M$ of dimension $m$ is a generalization of Euclidean space $\mathbb{R}^m$ to a topological space that _only locally_ resembles $\mathbb{R}^m$.
-More precisely, around every point $p \in M$ there exists a [neighborhood](https://en.wikipedia.org/wiki/Open_set#Topological_space) $U \subseteq M$ and a [smooth bijection](https://en.wikipedia.org/wiki/Diffeomorphism) $x \colon U \to \mathbb{R}^m$.
+A [smooth manifold](https://en.wikipedia.org/wiki/Differentiable_manifold) $M$ of dimension $m$ is a generalization of Euclidean space $ℝ^m$ to a topological space that _only locally_ resembles $ℝ^m$.
+More precisely, around every point $p \in M$ there exists a [neighborhood](https://en.wikipedia.org/wiki/Open_set#Topological_space) $U \subseteq M$ and a [smooth bijection](https://en.wikipedia.org/wiki/Diffeomorphism) $x \colon U \to ℝ^m$.
 
 The pair $(U,x)$ is called a [coordinate chart](https://en.wikipedia.org/wiki/Topological_manifold#Coordinate_charts) of the manifold.
 Using charts, abstract objects like tangent vectors, gradients, and differentials can be represented by arrays of real coefficients such as column vectors, row vectors, and matrices.
@@ -21,20 +21,20 @@ For details please see [Differentiation in local coordinates](diff-geo-chart.md)
 
 ## Tangent vectors on manifolds
 
-The notion of a [tangent vector](https://ncatlab.org/nlab/show/tangent+bundle) $v$ at $p$ generalizes the directional derivative of smooth functions over $\mathbb{R}^m$ to a derivative along smooth curves on $M$.
+The notion of a [tangent vector](https://ncatlab.org/nlab/show/tangent+bundle) $v$ at $p$ generalizes the directional derivative of smooth functions over $ℝ^m$ to a derivative along smooth curves on $M$.
 
-Concretely, a tangent vector $v$ is an equivalence class $[\gamma]_{\sim}$ of smooth curves $\gamma \colon \mathbb{R} \to M$ that pass through $p$ at parameter $0$, i.e., $\gamma(0) = p$.
+Concretely, a tangent vector $v$ is an equivalence class $[\gamma]_{\sim}$ of smooth curves $\gamma \colon ℝ \to M$ that pass through $p$ at parameter $0$, i.e., $\gamma(0) = p$.
 Two such curves $\gamma_1$ and $\gamma_2$ are considered equivalent if their derivatives agree in any chart $x$,
 
 $$
 \gamma_1 \sim \gamma_2 \Leftrightarrow  (x \circ \gamma_1)'(0) = (x \circ \gamma_2)'(0) .
 $$
 
-The composition $x \circ \gamma \colon \mathbb{R} \to \mathbb{R}^m$, $t \mapsto x(\gamma(t))$ is the representation of the curve $\gamma$ in local coordinates $x$.
+The composition $x \circ \gamma \colon ℝ \to ℝ^m$, $t \mapsto x(\gamma(t))$ is the representation of the curve $\gamma$ in local coordinates $x$.
 In general, the derivative of a smooth function $f$ along any curve $\gamma \in [\gamma]_{\sim}$ is the tangent vector
 
 $$
-v \colon C^{\infty}(U) \to \mathbb{R}, \quad f \mapsto (f \circ \gamma)'(0) .
+v \colon C^{\infty}(U) \to ℝ, \quad f \mapsto (f \circ \gamma)'(0) .
 $$
 
 ### Tangent space
@@ -73,26 +73,26 @@ In the context of automatic differentiation, the _forward-mode_ and _reverse-mod
 Given a chart $(U,x)$ on a smooth manifold $M$, the differential at $p \in U$
 
 $$
-\tag{1}
-{\rm d}x_p \colon T_pM \to \mathbb{R}^m, \quad v \mapsto v(x) = {\rm d}(x \circ \gamma)_0
+{\rm d}x_p \colon T_pM \to ℝ^m, \quad v \mapsto v(x) = {\rm d}(x \circ \gamma)_0
+\qquad (1)
 $$
 
-is a linear isomorphism between the tangent space $T_pM$ and $\mathbb{R}^m$ (see Theorem [here](https://en.wikipedia.org/wiki/Tangent_space#The_derivative_of_a_map)).
+is a linear isomorphism between the tangent space $T_pM$ and $ℝ^m$ (see Theorem [here](https://en.wikipedia.org/wiki/Tangent_space#The_derivative_of_a_map)).
 
 This means that in a chart $x$, every tangent vector $v$ has a unique representation as the differential of the curve $x \circ \gamma$ at $0$.
 
 ### Gradients are cotangent vectors
 
-Given a smooth function $\phi \colon M \to \mathbb{R}^n$ and a chart $(\phi(U), y)$ on $\mathbb{R}^n$, we have for every point $p \in U$ and tangent vector $v \in T_pM$ that
+Given a smooth function $\phi \colon M \to ℝ^n$ and a chart $(\phi(U), y)$ on $ℝ^n$, we have for every point $p \in U$ and tangent vector $v \in T_pM$ that
 
 $$
-({\rm d}\phi_p)(v)(y) = v(y \circ \phi) = v(y) \circ \phi \mapsto v(\phi) \in \mathbb{R}^n \ .
+({\rm d}\phi_p)(v)(y) = v(y \circ \phi) = v(y) \circ \phi \mapsto v(\phi) \in ℝ^n \ .
 $$
 
 The last map is by the inverse of the linear isomorphism (1).
 
-Taking $n=1$, this means that for a scalar function $f \colon M \to \mathbb{R}$ and $p \in M$, the gradient ${\rm d}f_p$ is a linear functional on $T_pM$ that maps tangent vectors to $\mathbb{R}$.
-In other words, the gradient is a cotangent vector in $T_p^*M = (T_pM)^*$.
+Taking $n=1$, this means that for a scalar function $f \colon M \to ℝ$ and $p \in M$, the gradient ${\rm d}f_p$ is a linear functional on $T_pM$ that maps tangent vectors to $ℝ$.
+In other words, the gradient is a cotangent vector in $T_p^{\ast}M = (T_pM)^*$.
 
 > [!IMPORTANT]
 > Usually, the [gradient](https://en.wikipedia.org/wiki/Gradient) $\nabla f(p)$ is defined as the unique vector such that $\langle \nabla f(p), v \rangle = {\rm d}f_p(v)$ for all tangent vectors $v \in T_pM$.

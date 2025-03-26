@@ -5,14 +5,14 @@
 
 ## Charts
 
-Given a smooth manifold $M$ of dimension $m$, there is a smooth bijection $x \colon U \to \mathbb{R}^m$ defined on a neighborhood $U \subseteq M$.
+Given a smooth manifold $M$ of dimension $m$, there is a smooth bijection $x \colon U \to ℝ^m$ defined on a neighborhood $U \subseteq M$.
 
 The pair $(U,x)$ is called a _chart_ of the manifold and assigns a set of _coordinates_ $x^i(p)$ to points $p \in U$.
-The _component functions_ $x^i \colon U \to \mathbb{R}$ project to the $i$th component, $p \mapsto {\rm proj}_i(x(p))$.
+The _component functions_ $x^i \colon U \to ℝ$ project to the $i$th component, $p \mapsto {\rm proj}_i(x(p))$.
 
 ## Tangent vectors in charts
 
-A tangent vector at $p \in M$ is a linear map $v \colon C^{\infty}(M) \to \mathbb{R}$
+A tangent vector at $p \in M$ is a linear map $v \colon C^{\infty}(M) \to ℝ$
 (see definition in [Tangent vectors on manifolds](diff-geo.md#tangent-vectors-on-manifolds)).
 
 The tangent space $T_pM$ at $p$ is an $m$-dimensional vector space.
@@ -28,7 +28,7 @@ $$
 v = \sum_{i=1}^m v^i \left( \frac{\partial}{\partial x^i} \right)_p
 $$
 
-with coefficients $v^i \in \mathbb{R}$.
+with coefficients $v^i \in ℝ$.
 Since
 
 $$
