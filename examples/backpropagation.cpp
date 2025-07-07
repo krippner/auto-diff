@@ -15,7 +15,7 @@
  * This gradient is then used to update the parameters,
  * using backtracking line search for optimal step size (learning rate).
  *
- * Copyright (c) 2024 Matthias Krippner
+ * Copyright (c) 2024-2025 Matthias Krippner
  *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
@@ -37,7 +37,6 @@
 #include <Eigen/Core>
 
 #include <cmath> // sqrt
-#include <cstdio>
 #include <iostream>
 #include <utility> // pair
 #include <vector>
@@ -54,7 +53,6 @@ using Eigen::Vector3d;
 using Eigen::VectorXd;
 
 using std::cout;
-using std::printf;
 
 // Define a dataset as a vector of input-output pairs.
 using Dataset = std::vector<std::pair<Vector2d, double>>;
@@ -76,9 +74,9 @@ auto sigmoid(AutoDiff::Expression<Expr> const& input)
 
 int main()
 {
-    printf("## Training a XOR network using backpropagation ##\n");
+    cout << "## Training a XOR network using backpropagation ##\n";
 
-    printf("Setting up neural network...\n");
+    cout << "Setting up neural network...\n";
 
     // Define network parameters.
     Index const inputSize  = 2 + 1; // 2d input + bias
@@ -120,7 +118,7 @@ int main()
         {Vector2d(0, 2), 1}      // | local minima
     };
 
-    printf("Starting training...");
+    cout << "Starting training...";
     auto currentMSE   = 0.0;
     auto learningRate = 1.0;
     auto epoch        = 0;
@@ -203,14 +201,15 @@ int main()
         // printf("Epoch %d: MSE = %f, learning rate = %f, |gradient| = %f\n",
         //     epoch, currentMSE, learningRate, gradientNorm);
     }
-    printf(" finished after %d epochs with MSE = %f.\n", epoch, currentMSE);
+    cout << " finished after " << epoch << " epochs with MSE = " << currentMSE
+         << ".\n";
     if (!hasConverged) {
-        printf("Warning: training did not converge.\n");
+        cout << "Warning: training did not converge.\n";
     }
     cout << "Hidden weights:\n" << hiddenWeights << "\n";
     cout << "Output weights:\n" << outputWeights << "\n";
 
-    printf("Evaluating trained network...\n");
+    cout << "Evaluating trained network...\n";
     std::vector<Vector2d> const evaluationSet = {
         Vector2d(0, 0),     //
         Vector2d(1, 0),     //
