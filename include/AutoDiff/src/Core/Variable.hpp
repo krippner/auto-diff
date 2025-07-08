@@ -6,16 +6,13 @@
 #ifndef AUTODIFF_SRC_CORE_VARIABLE_HPP
 #define AUTODIFF_SRC_CORE_VARIABLE_HPP
 
-#include "../internal/Computation.hpp"
-#include "../internal/Node.hpp" // NodeOwner
+#include "../internal/Node.hpp"
+#include "../internal/Reference.hpp"
 #include "../internal/traits.hpp"
 #include "AbstractVariable.hpp"
 #include "Expression.hpp"
 
-#include <algorithm> // swap
-#include <memory>
-#include <type_traits> // enable_if
-#include <utility>     // move
+#include <type_traits>
 
 namespace AutoDiff {
 
@@ -65,11 +62,7 @@ public:
      *
      * @param value    the literal value
      */
-    explicit Variable(Value value)
-        : Variable{}
-    {
-        mRef->setValue(std::move(value));
-    }
+    explicit Variable(Value value);
 
     /**
      * @brief Create a variable that evaluates an expression of other variables.
@@ -81,11 +74,7 @@ public:
      * @param expression       the expression to be evaluated
      */
     template <typename Expr>
-    explicit Variable(Expression<Expr> const& expression)
-        : Variable{}
-    {
-        setExpression(expression);
-    }
+    explicit Variable(Expression<Expr> const& expression);
 
     ~Variable() override = default;
 
@@ -97,23 +86,7 @@ public:
     /**
      * @brief Returns the cached value.
      */
-    [[nodiscard]] auto operator()() const -> Value const&
-    {
-        return mRef->value();
-    }
-
-    /**
-     * @brief The differential (i.e., the cached derivative) of a variable.
-     *
-     * Depending on the mode of differentiation, this derivative
-     * can be a tangent vector or gradient.
-     *
-     * @param  variable    the variable to be differentiated
-     */
-    [[nodiscard]] friend auto d(Variable const& variable) -> Derivative const&
-    {
-        return variable.mRef->derivative();
-    }
+    [[nodiscard]] auto operator()() const -> Value const&;
 
     /**
      * @brief Evaluate an expression in place of the current value or
@@ -129,25 +102,16 @@ public:
      * @tparam Expr        the type of the expression, must not be Variable
      * @param expression   the expression to be evaluated
      */
-    template <typename Expr,
-        typename = std::enable_if_t<!std::is_same_v<Expr, Variable>>>
-    auto operator=( // NOLINT(*-signature)
-        Expression<Expr> const& expression) const -> Variable const&
-    {
-        setExpression(expression);
-        return *this;
-    }
+    template <NotVariable Expr>
+    // NOLINTNEXTLINE(*-signature)
+    auto operator=(Expression<Expr> const& expression) const -> Variable const&;
 
     /**
      * @brief Assign a literal to replace the current value or expression.
      *
      * @param value    the literal value
      */
-    auto operator=(Value value) const -> Variable const& // NOLINT(*-signature)
-    {
-        mRef->setValue(std::move(value));
-        return *this;
-    }
+    auto operator=(Value value) const -> Variable const&; // NOLINT(*-signature)
 
     /**
      * @brief Assign an expression to replace the current value or expression.
@@ -159,167 +123,84 @@ public:
      * @param expression    the expression to be assigned
      */
     template <typename Expr>
-    void setExpression(Expression<Expr> const& expression) const
-    {
-        mRef->setExpression(expression);
-#ifndef AUTODIFF_NO_EAGER_EVALUATION
-        mRef->evaluate();
-#endif
-    }
-
-    /**
-     * @brief Check whether two variables point to the same computation.
-     */
-    [[nodiscard]] friend auto operator==(
-        Variable const& left, Variable const& right) -> bool
-    {
-        return left.mRef == right.mRef;
-    }
-
-    /**
-     * @brief Check whether two variables point to different computations.
-     */
-    [[nodiscard]] friend auto operator!=(
-        Variable const& left, Variable const& right) -> bool
-    {
-        return left.mRef != right.mRef;
-    }
+    void setExpression(Expression<Expr> const& expression) const;
 
     /**
      * @brief Set the value of the associated derivative.
      *
      * @param  derivative  the derivative to use
      */
-    void setDerivative(Derivative derivative) const
-    {
-        mRef->setDerivative(std::move(derivative));
-    }
+    void setDerivative(Derivative derivative) const;
 
     // Note: The following functions with leading underscores
     // are not part of the public API.
 
-    [[nodiscard]] auto _node() const -> internal::AbstractComputation* override
-    {
-        return mRef.operator->();
-    }
+    [[nodiscard]] auto _node() const -> internal::AbstractComputation* override;
 
-    // Expression implementation ===============================================
+    // Expression implementation
+    // ===============================================
 
     // Must return Value by reference to avoid dangling references to
     // temporaries in expressions!
-    [[nodiscard]] auto _valueImpl() const -> Value const&
-    {
-        return mRef->value();
-    }
+    [[nodiscard]] auto _valueImpl() const -> Value const&;
 
-    [[nodiscard]] auto _pushForwardImpl() const -> Derivative const&
-    {
-        return mRef->derivative();
-    }
+    [[nodiscard]] auto _pushForwardImpl() const -> Derivative const&;
 
     template <typename OtherDerivative>
-    void _pullBackImpl(OtherDerivative const& gradient) const
-    {
-        mRef->addGradient(gradient);
-    }
+    void _pullBackImpl(OtherDerivative const& gradient) const;
 
-    void _transferChildrenToImpl(internal::Node& node)
-    {
-        mRef.transferOperationTo(node);
-    }
+    void _transferChildrenToImpl(internal::Node& node);
 
     void _releaseCacheImpl() const { } // does not apply to Variable
 
 private:
-    /**
-     * @class Reference
-     * @brief Essentially a shared pointer to a computation node.
-     *
-     * Additionally, it holds a unique owner object that is used
-     * to register and unregister ownership of the computation.
-     */
-    class Reference {
-    public:
-        using Owner       = internal::NodeOwner;
-        using Computation = internal::Computation<Value, Derivative>;
+    template <typename V, typename D>
+    friend auto d(Variable<V, D> const&) -> D const&;
 
-        Reference() { mComputation->addParentOwner(mOwner); }
+    template <typename V, typename D>
+    friend auto operator==(
+        Variable<V, D> const& left, Variable<V, D> const& right) -> bool;
 
-        Reference(Reference const& other)
-            : mComputation{other.mComputation}
-            , mComputationPtr{other.mComputationPtr}
-        {
-            mComputation->addParentOwner(mOwner); // owner is unique
-        }
+    template <typename V, typename D>
+    friend auto operator!=(
+        Variable<V, D> const& left, Variable<V, D> const& right) -> bool;
 
-        auto operator=(Reference other) -> Reference&
-        {
-            swap(*this, other);
-            return *this;
-        }
-
-        ~Reference()
-        {
-            if (static_cast<bool>(mComputation)) {
-                mComputation->removeParentOwner(mOwner);
-            } // else transferOperationTo was called
-        }
-
-        Reference(Reference&&) noexcept                    = default;
-        auto operator=(Reference&&) noexcept -> Reference& = default;
-
-        [[nodiscard]] auto operator->() const -> Computation*
-        {
-            // Note: raw ptr always valid:
-            // ~Node guarantees that this function is not called
-            // between ~Computation and ~Variable.
-            return mComputationPtr;
-        }
-
-        void transferOperationTo(internal::Node& node)
-        {
-            // Note: shared_ptr always valid:
-            // This function is called at most once, which is when the
-            // parent Variable is bound in an expression (copy ctor).
-
-            // unregister ownership
-            mComputation->removeParentOwner(mOwner);
-            // transfer owning pointer to node
-            node.addChild(mComputation);
-            mComputation.reset();
-        }
-
-        [[nodiscard]] friend auto operator==(
-            Reference const& left, Reference const& right)
-        {
-            return left.mComputationPtr == right.mComputationPtr;
-        }
-
-        [[nodiscard]] friend auto operator!=(
-            Reference const& left, Reference const& right)
-        {
-            return left.mComputationPtr != right.mComputationPtr;
-        }
-
-        friend void swap(Reference& a, Reference& b) noexcept
-        {
-            using std::swap;
-            swap(a.mOwner, b.mOwner);
-            swap(a.mComputation, b.mComputation);
-            swap(a.mComputationPtr, b.mComputationPtr);
-        }
-
-    private:
-        std::unique_ptr<Owner> mOwner{std::make_unique<Owner>()};
-        std::shared_ptr<Computation> mComputation{
-            std::make_shared<Computation>()};
-        Computation* mComputationPtr{mComputation.get()};
-    };
-
-    Reference mRef;
+    // The reference to the computation node
+    // that holds the value and derivative.
+    internal::Reference<Value, Derivative> mRef;
 };
 
-// Variable factories =========================================================
+// free functions
+// =========================================================
+
+/**
+ * @brief The differential (i.e., the cached derivative) of a variable.
+ *
+ * Depending on the mode of differentiation, this derivative
+ * can be a tangent vector or gradient.
+ *
+ * @param  variable    the variable to be differentiated
+ */
+template <typename Value, typename Derivative>
+[[nodiscard]] auto d(Variable<Value, Derivative> const& variable)
+    -> Derivative const&;
+
+/**
+ * @brief Check whether two variables point to the same computation.
+ */
+template <typename Value, typename Derivative>
+[[nodiscard]] auto operator==(Variable<Value, Derivative> const& left,
+    Variable<Value, Derivative> const& right) -> bool;
+
+/**
+ * @brief Check whether two variables point to different computations.
+ */
+template <typename Value, typename Derivative>
+[[nodiscard]] auto operator!=(Variable<Value, Derivative> const& left,
+    Variable<Value, Derivative> const& right) -> bool;
+
+// Variable factories
+// =========================================================
 
 namespace detail {
 
@@ -339,20 +220,13 @@ namespace detail {
         using type       = Variable<Value, Derivative>;
     };
 
-    template <typename T, typename = std::void_t<>>
-    struct IsSupportedValue : std::false_type { };
-
-    template <typename T>
-    struct IsSupportedValue<T, std::void_t<internal::Evaluated_t<T>>>
-        : std::true_type { };
-
 } // namespace detail
 
 /**
  * @brief Whether the value type is supported in expressions.
  */
 template <typename T>
-constexpr bool isSupportedValue_v = detail::IsSupportedValue<T>::value;
+concept Evaluable = requires { typename internal::Evaluated_t<T>; };
 
 /**
  * @brief Create a variable holding a literal.
@@ -365,11 +239,9 @@ constexpr bool isSupportedValue_v = detail::IsSupportedValue<T>::value;
  * @tparam T           the type of the unevaluated literal
  * @param  literal     the literal value
  */
-template <typename T, typename = std::enable_if_t<isSupportedValue_v<T>>>
-auto var(T const& literal) -> typename detail::VariableFromValue<T>::type
-{
-    return typename detail::VariableFromValue<T>::type(literal);
-}
+
+template <Evaluable T>
+auto var(T const& literal) -> typename detail::VariableFromValue<T>::type;
 
 /**
  * @brief Create a variable that evaluates an expression of other variables.
@@ -385,10 +257,7 @@ auto var(T const& literal) -> typename detail::VariableFromValue<T>::type
  */
 template <typename Expr>
 auto var(Expression<Expr> const& expression) ->
-    typename detail::VariableFromExpr<Expr>::type
-{
-    return typename detail::VariableFromExpr<Expr>::type(expression);
-}
+    typename detail::VariableFromExpr<Expr>::type;
 
 /**
  * @brief Create a variable that depends on another variable
@@ -400,14 +269,10 @@ auto var(Expression<Expr> const& expression) ->
  */
 template <typename Value, typename Derivative>
 auto var(Variable<Value, Derivative> const& variable)
-{
-    Variable<Value, Derivative> newVariable;
-    newVariable.setExpression(variable);
-    return newVariable;
-}
-
-#include "Variable.tpp" // implementations
+    -> Variable<Value, Derivative>;
 
 } // namespace AutoDiff
+
+#include "Variable.tpp" // implementation
 
 #endif // AUTODIFF_SRC_CORE_VARIABLE_HPP
