@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,9 +8,10 @@
 
 #include "../internal/AbstractComputation.hpp"
 #include "../internal/TopoView.hpp"
-#include "../internal/range_algorithm.hpp"
 #include "AbstractVariable.hpp"
 
+#include <algorithm> // for_each
+#include <ranges>    // views::reverse
 #include <sstream>
 #include <stdexcept> // logic_error
 #include <unordered_set>
@@ -176,7 +177,7 @@ public:
         mPureSources.clear();
         mSequence.clear();
         try {
-            internal::for_each_in_range(
+            std::ranges::for_each(
                 TopoView(mSpecifiedTargets, mSpecifiedSources),
                 [this](TopoView::NodeInfo const& current) {
                     auto* computation
@@ -244,13 +245,13 @@ public:
                << mTargets.size() << " targets, and " << mSequence.size()
                << " internal computations.\n";
             ss << "Sources:\n";
-            internal::for_each_in_range(mSources,
+            std::ranges::for_each(mSources,
                 [&](Computation* computation) { ss << computation << "\n"; });
             ss << "Targets:\n";
-            internal::for_each_in_range(mTargets,
+            std::ranges::for_each(mTargets,
                 [&](Computation* computation) { ss << computation << "\n"; });
             ss << "Internal computations:\n";
-            internal::for_each_in_range(mSequence,
+            std::ranges::for_each(mSequence,
                 [&](Computation* computation) { ss << computation << "\n"; });
         } else {
             ss << "Function not compiled.\n";
@@ -269,9 +270,9 @@ public:
     void evaluate()
     {
         compileIfNecessary();
-        internal::for_each_in_range(mSequence,
+        std::ranges::for_each(mSequence,
             [](Computation* computation) { computation->evaluate(); });
-        internal::for_each_in_range(mPureTargets,
+        std::ranges::for_each(mPureTargets,
             [](Computation* computation) { computation->evaluate(); });
     }
 
@@ -301,9 +302,9 @@ public:
     void pushTangent()
     {
         compileIfNecessary();
-        internal::for_each_in_range(mSequence,
+        std::ranges::for_each(mSequence,
             [](Computation* computation) { computation->pushTangent(); });
-        internal::for_each_in_range(mPureTargets,
+        std::ranges::for_each(mPureTargets,
             [](Computation* computation) { computation->pushTangent(); });
     }
 
@@ -340,7 +341,7 @@ public:
         }
 
         auto const seedShape = seedNode->valueShape();
-        internal::for_each_in_range(mSources, [&](Computation* computation) {
+        std::ranges::for_each(mSources, [&](Computation* computation) {
             computation->setTangentZero(seedShape);
         });
         seedNode->setDerivativeIdentity();
@@ -377,18 +378,17 @@ public:
         auto const seedShape = mReferenceTarget->derivativeCodomainShape();
 
         // initialize internal and source gradients to zero
-        internal::for_each_in_range(mSequence, [&](Computation* computation) {
+        std::ranges::for_each(mSequence, [&](Computation* computation) {
             computation->setGradientZero(seedShape);
         });
-        internal::for_each_in_range(
-            mPureSources, [&](Computation* computation) {
-                computation->setGradientZero(seedShape);
-            });
+        std::ranges::for_each(mPureSources, [&](Computation* computation) {
+            computation->setGradientZero(seedShape);
+        });
 
         // pull back gradients from targets to sources
-        internal::for_each_in_range(mPureTargets,
+        std::ranges::for_each(mPureTargets,
             [](Computation* computation) { computation->pullGradient(); });
-        internal::for_each_in_reversed_range(mSequence,
+        std::ranges::for_each(mSequence | std::views::reverse,
             [](Computation* computation) { computation->pullGradient(); });
     }
 
@@ -426,7 +426,7 @@ public:
         }
 
         auto const seedShape = seedNode->valueShape();
-        internal::for_each_in_range(mTargets, [&](Computation* computation) {
+        std::ranges::for_each(mTargets, [&](Computation* computation) {
             computation->setGradientZero(seedShape);
         });
         seedNode->setDerivativeIdentity();

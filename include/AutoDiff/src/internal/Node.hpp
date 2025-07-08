@@ -6,10 +6,10 @@
 #ifndef AUTODIFF_SRC_INTERNAL_NODE_HPP
 #define AUTODIFF_SRC_INTERNAL_NODE_HPP
 
-#include "range_algorithm.hpp"
-
+#include <algorithm> // for_each
 #include <memory>
 #include <queue>
+#include <ranges> // views::reverse
 #include <unordered_set>
 #include <utility> // move
 #include <vector>
@@ -129,7 +129,7 @@ private:
             Node* node = queue.front();
             node->removeOwnership();
             mNodesToDelete.push_back(node);
-            for_each_in_range(
+            std::ranges::for_each(
                 queue.front()->mChildren, [&](NodePtr const& child) {
                     if (child->canBeDeleted()) {
                         queue.push(child.get());
@@ -137,13 +137,13 @@ private:
                 });
             queue.pop();
         }
-        for_each_in_reversed_range(
-            mNodesToDelete, [](Node* node) { node->removeChildren(); });
+        std::ranges::for_each(mNodesToDelete | std::views::reverse,
+            [](Node* node) { node->removeChildren(); });
     }
 
     void removeOwnership()
     {
-        for_each_in_range(mChildren, [this](NodePtr const& child) {
+        std::ranges::for_each(mChildren, [this](NodePtr const& child) {
             child->removeParentOwner(this->mOwner);
         });
     }
