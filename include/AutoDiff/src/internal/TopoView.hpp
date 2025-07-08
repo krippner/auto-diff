@@ -8,7 +8,6 @@
 
 #include "Node.hpp"
 #include "Path.hpp"
-#include "range_algorithm.hpp"
 
 #include <iterator>
 #include <unordered_set>
@@ -136,12 +135,15 @@ public:
             return mCurrentValue;
         }
 
-        /**
-         * @brief Returns true as long as the iterator is valid.
-         */
-        friend auto operator!=(Iterator const& a, Iterator const& b) -> bool
+        friend auto operator==(Iterator const& a, Iterator const& b) -> bool
         {
-            return !(a.mPath.isEmpty() && b.mPath.isEmpty());
+            if (a.mPath.isEmpty() && b.mPath.isEmpty()) {
+                return true; // both iterators are invalid
+            }
+            if (a.mPath.isEmpty() || b.mPath.isEmpty()) {
+                return false; // one iterator is invalid, the other is not
+            }
+            return a.mPath.tail() == b.mPath.tail();
         }
 
         /**
@@ -157,6 +159,19 @@ public:
             mPath.removeTail();
             findNextValue();
             return *this;
+        }
+
+        /**
+         * @brief Postfix increment operator.
+         *
+         * @throws A @c CyclicGraphError if topological ordering is impossible
+         * due to a cycle in the graph.
+         */
+        auto operator++(int) -> Iterator
+        {
+            auto old = *this;
+            ++(*this);
+            return old;
         }
 
     private:

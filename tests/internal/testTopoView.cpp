@@ -7,6 +7,8 @@
 #include <catch2/matchers/catch_matchers_container_properties.hpp> // IsEmpty
 #include <catch2/matchers/catch_matchers_vector.hpp>               // Equals
 
+#include <ranges>
+
 using Catch::Matchers::Equals;
 using Catch::Matchers::IsEmpty;
 using Catch::Matchers::UnorderedEquals;
@@ -66,6 +68,12 @@ auto leafSet(std::shared_ptr<Nodes> const&... nodePtrs)
 auto getId(TopoView::NodeInfo const& nodeInfo)
 {
     return test::TopoView::NodeImpl::id(nodeInfo.node);
+}
+
+SCENARIO("Input range requirements", "[TopoView]")
+{
+    STATIC_CHECK(std::ranges::range<TopoView>);
+    STATIC_CHECK(std::ranges::input_range<TopoView>);
 }
 
 SCENARIO("Empty graph", "[TopoView]")
