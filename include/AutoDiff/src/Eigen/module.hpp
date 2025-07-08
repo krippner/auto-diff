@@ -61,13 +61,6 @@ using Vector4f = Matrix<float, 4, 1, 0, 4, 1>;
 
 // mandatory specializations of type traits for Eigen types
 
-namespace AutoDiff::detail {
-
-template <typename T>
-using Unqualified_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-} // namespace AutoDiff::detail
-
 namespace AutoDiff::internal {
 
 // Scalar types are already equal to their evaluated types.
@@ -79,7 +72,7 @@ struct Evaluated<Scalar, std::enable_if_t<EigenAD::isScalar_v<Scalar>>> {
 // Let Eigen decide the evaluated type of dense Eigen types.
 template <typename Dense>
 struct Evaluated<Dense, std::enable_if_t<EigenAD::isDense_v<Dense>>> {
-    using type = detail::Unqualified_t<decltype(std::declval<Dense>().eval())>;
+    using type = std::remove_cvref_t<decltype(std::declval<Dense>().eval())>;
 };
 
 // For arrays, values and derivatives must have the same type

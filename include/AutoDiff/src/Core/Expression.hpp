@@ -138,22 +138,17 @@ constexpr bool isExpression_v = std::is_base_of_v<Expression<Expr>, Expr>;
 namespace detail {
 
     /**
-     * @brief Alias template to remove cv-qualifiers and references from a type.
-     */
-    template <typename T>
-    using Unqualified_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-    /**
      * @brief Type trait to get the value type of an Expression.
      */
     template <typename T, typename = void>
     struct ValueType {
-        using type = Unqualified_t<T>; // default when T is not an Expression
+        // fallback when T is not an Expression
+        using type = std::remove_cvref_t<T>;
     };
 
     template <typename T>
     struct ValueType<T, std::void_t<decltype(std::declval<T>()._value())>> {
-        using type = Unqualified_t<decltype(std::declval<T>()._value())>;
+        using type = std::remove_cvref_t<decltype(std::declval<T>()._value())>;
     };
 
 } // namespace detail

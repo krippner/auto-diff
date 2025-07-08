@@ -406,6 +406,8 @@ auto var(Variable<Value, Derivative> const& variable)
     return newVariable;
 }
 
+#include "Variable.tpp" // implementations
+
 } // namespace AutoDiff
 
 #endif // AUTODIFF_SRC_CORE_VARIABLE_HPP

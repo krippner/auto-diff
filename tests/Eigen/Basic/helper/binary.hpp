@@ -13,9 +13,6 @@
 
 namespace detail {
 
-template <typename T>
-using Unqualified_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
 template <typename ValueX, typename ValueY, typename Derivative,
     typename Derived>
 void checkBinaryOp(test::MockOperation<ValueX, Derivative>& operandX,
@@ -89,8 +86,8 @@ void checkBinaryOp(test::MockOperation<ValueX, Derivative>& operandX,
 #define CHECK_BINARY_OP(operation, pX, pY, v, dX, dY, prec)                    \
     WHEN("evaluating")                                                         \
     {                                                                          \
-        using PointX    = detail::Unqualified_t<decltype(pX)>;                 \
-        using PointY    = detail::Unqualified_t<decltype(pY)>;                 \
+        using PointX    = std::remove_cvref_t<decltype(pX)>;                   \
+        using PointY    = std::remove_cvref_t<decltype(pY)>;                   \
         auto operandX   = test::MockOperation<PointX, Eigen::MatrixXd>();      \
         auto operandY   = test::MockOperation<PointY, Eigen::MatrixXd>();      \
         auto expression = operation(operandX, operandY);                       \
@@ -99,14 +96,14 @@ void checkBinaryOp(test::MockOperation<ValueX, Derivative>& operandX,
     }                                                                          \
     WHEN("evaluating with left literal operand")                               \
     {                                                                          \
-        using Point     = detail::Unqualified_t<decltype(pY)>;                 \
+        using Point     = std::remove_cvref_t<decltype(pY)>;                   \
         auto operand    = test::MockOperation<Point, Eigen::MatrixXd>();       \
         auto expression = operation(pX, operand);                              \
         detail::checkUnaryOp(operand, expression, pY, v, dY, prec);            \
     }                                                                          \
     WHEN("evaluating with right literal operand")                              \
     {                                                                          \
-        using Point     = detail::Unqualified_t<decltype(pX)>;                 \
+        using Point     = std::remove_cvref_t<decltype(pX)>;                   \
         auto operand    = test::MockOperation<Point, Eigen::MatrixXd>();       \
         auto expression = operation(operand, pY);                              \
         detail::checkUnaryOp(operand, expression, pX, v, dX, prec);            \

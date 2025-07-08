@@ -11,9 +11,6 @@
 
 namespace detail {
 
-template <typename T>
-using Unqualified_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
 template <typename Value, typename Derivative, typename Derived, typename P,
     typename V, typename D>
 void checkUnaryOp(test::MockOperation<Value, Derivative>& operand,
@@ -67,7 +64,7 @@ void checkUnaryOp(test::MockOperation<Value, Derivative>& operand,
 #define CHECK_UNARY_OP(operation, p, v, d, prec)                               \
     WHEN("evaluating")                                                         \
     {                                                                          \
-        using Point     = detail::Unqualified_t<decltype(p)>;                  \
+        using Point     = std::remove_cvref_t<decltype(p)>;                    \
         auto operand    = test::MockOperation<Point, Eigen::ArrayXXd>();       \
         auto expression = operation(operand);                                  \
         detail::checkUnaryOp(operand, expression, p, v, d, prec);              \
