@@ -22,7 +22,7 @@ target_include_directories(
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     $<INSTALL_INTERFACE:include>
 )
-target_compile_features(AutoDiff INTERFACE cxx_std_17)
+target_compile_features(AutoDiff INTERFACE cxx_std_20)
 
 if (${PROJECT_IS_TOP_LEVEL})
 

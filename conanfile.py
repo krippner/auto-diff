@@ -24,7 +24,7 @@ class AutoDiffRecipe(ConanFile):
     no_copy_source = True
 
     def validate(self):
-        check_min_cppstd(self, 17)
+        check_min_cppstd(self, 20)
 
     def requirements(self):
         self.tool_requires("cmake/[>=3.15]")

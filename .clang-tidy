@@ -18,5 +18,5 @@ Checks: >
   -*-magic-numbers,
   -*-macro-usage,
   -*-macro-parentheses,
-ExtraArgs: - -std=c++17
+ExtraArgs: - -std=c++20
 HeaderFilterRegex: ".*(AutoDiff).*$"
