@@ -153,8 +153,8 @@ public:
          */
         auto operator++() -> Iterator&
         {
-            mVisited.insert(mPath.head());
-            mPath.removeHead();
+            mVisited.insert(mPath.tail());
+            mPath.removeTail();
             findNextValue();
             return *this;
         }
@@ -169,7 +169,8 @@ public:
                     mPath.tryAdd(root);
                     if (isSpecifiedLeaf(root)) {
                         // root is leaf and root (obviously)
-                        mCurrentValue = {root, true, true};
+                        mCurrentValue
+                            = {.node = root, .isLeaf = true, .isRoot = true};
                         return;
                     }
                 }
@@ -188,15 +189,17 @@ public:
                         mPath.tryAdd(candidate);
                         if (isSpecifiedLeaf(candidate)) {
                             auto const isRoot = mPath.size() == 1;
-                            mCurrentValue     = {candidate, true, isRoot};
+                            mCurrentValue     = {.node = candidate,
+                                    .isLeaf            = true,
+                                    .isRoot            = isRoot};
                             return;
                         }
                     }
                 } else {
-                    // head with no children or all its children already visited
-                    auto const isLeaf = mPath.head()->children().empty();
-                    auto const isRoot = mPath.size() == 1;
-                    mCurrentValue     = {mPath.head(), isLeaf, isRoot};
+                    // tail with no children or all its children already visited
+                    mCurrentValue = {.node = mPath.tail(),
+                        .isLeaf            = mPath.tail()->children().empty(),
+                        .isRoot            = mPath.size() == 1};
                     return;
                 }
             }
@@ -204,13 +207,12 @@ public:
 
         [[nodiscard]] auto notYetVisited(Node* node) -> bool
         {
-            return mVisited.find(node) == mVisited.end();
+            return !mVisited.contains(node);
         }
 
         [[nodiscard]] auto isSpecifiedLeaf(Node* node) -> bool
         {
-            return mView->mSpecifiedLeaves.find(node)
-                != mView->mSpecifiedLeaves.end();
+            return mView->mSpecifiedLeaves.contains(node);
         }
 
         TopoView const* mView{nullptr};

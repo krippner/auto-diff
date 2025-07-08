@@ -49,17 +49,17 @@ public:
 
     [[nodiscard]] auto size() const -> std::size_t { return mStack.size(); }
 
-    // causes undefined behaviour if path is empty
-    [[nodiscard]] auto head() const -> Node* { return mStack.top().node; }
+    // path must not be empty
+    [[nodiscard]] auto tail() const -> Node*
 
-    // causes undefined behaviour if path is empty
-    void removeHead()
+    // path must not be empty
+    void removeTail()
     {
-        mSet.erase(head());
+        mSet.erase(tail());
         mStack.pop();
     }
 
-    // causes undefined behaviour if path is empty
+    // path must not be empty
     auto next() -> std::optional<Node*>
     {
         auto& current = mStack.top();
