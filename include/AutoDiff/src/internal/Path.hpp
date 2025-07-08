@@ -8,6 +8,7 @@
 
 #include "Node.hpp"
 
+#include <cassert>
 #include <optional>
 #include <stack>
 #include <stdexcept> // logic_error
@@ -51,6 +52,11 @@ public:
 
     // path must not be empty
     [[nodiscard]] auto tail() const -> Node*
+    {
+        assert(!mStack.empty() && "Path is empty, cannot access tail.");
+
+        return mStack.top().node;
+    }
 
     // path must not be empty
     void removeTail()
@@ -62,6 +68,8 @@ public:
     // path must not be empty
     auto next() -> std::optional<Node*>
     {
+        assert(!mStack.empty() && "Path is empty, cannot access next node.");
+
         auto& current = mStack.top();
         if (current.childIter == current.node->children().cend()) {
             return std::nullopt;
