@@ -8,7 +8,7 @@ from conan.tools.files import rmdir
 
 class AutoDiffRecipe(ConanFile):
     name = "autodiff"
-    version = "0.4.0"
+    version = "0.5.0"
     package_type = "header-library"
 
     license = "MIT"

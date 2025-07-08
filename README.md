@@ -239,7 +239,7 @@ Add the following line to your `conanfile.txt`:
 
 ```ini
 [requires]
-autodiff/0.4.0
+autodiff/0.5.0
 ```
 
 To make the library available in your CMake project, run:
