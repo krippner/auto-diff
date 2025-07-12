@@ -12,8 +12,6 @@
 #include "AbstractVariable.hpp"
 #include "Expression.hpp"
 
-#include <type_traits>
-
 namespace AutoDiff {
 
 /**
