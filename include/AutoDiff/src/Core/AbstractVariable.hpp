@@ -8,8 +8,6 @@
 
 #include "../internal/AbstractComputation.hpp"
 
-#include <type_traits> // is_base_of
-
 namespace AutoDiff {
 
 /**
@@ -40,9 +38,6 @@ protected:
     auto operator=(AbstractVariable const&) -> AbstractVariable&     = default;
     auto operator=(AbstractVariable&&) noexcept -> AbstractVariable& = default;
 };
-
-template <typename T>
-concept NotVariable = !std::is_base_of_v<AbstractVariable, T>;
 
 } // namespace AutoDiff
 
