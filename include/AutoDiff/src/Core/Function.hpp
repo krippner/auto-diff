@@ -10,10 +10,54 @@
 #include "../internal/TopoView.hpp"
 #include "AbstractVariable.hpp"
 
+#include <algorithm> // for_each
+#include <ranges>    // views::reverse
+#include <sstream>
+#include <stdexcept> // logic_error
 #include <unordered_set>
+#include <utility> // move
 #include <vector>
 
 namespace AutoDiff {
+
+/**
+ * @class EmptyFunctionError
+ * @brief A function must have at least one target.
+ */
+class EmptyFunctionError : public std::logic_error {
+public:
+    explicit EmptyFunctionError(std::string const& arg)
+        : logic_error(arg)
+    {
+    }
+};
+
+/**
+ * @class CyclicDependencyError
+ * @brief Expressions with cyclic dependencies cannot be evaluated.
+ *
+ * Cyclic dependencies between variables can be introduced when
+ * assigning certain expressions to variables.
+ */
+class CyclicDependencyError : public std::logic_error {
+public:
+    explicit CyclicDependencyError(std::string const& arg)
+        : logic_error(arg)
+    {
+    }
+};
+
+/**
+ * @class SeedError
+ * @brief Derivative propagation fails if the wrong variable is seeded.
+ */
+class SeedError : public std::logic_error {
+public:
+    explicit SeedError(std::string const& arg)
+        : logic_error(arg)
+    {
+    }
+};
 
 /**
  * @class Function
@@ -53,7 +97,11 @@ public:
      *
      * @param  target      the target variable
      */
-    inline explicit Function(AbstractVariable const& target);
+    explicit Function(AbstractVariable const& target)
+    {
+        mSpecifiedTargets.obj.insert(target._node());
+        setReferenceTarget();
+    }
 
     /**
      * @brief Create a function with multiple target variables.
@@ -67,7 +115,11 @@ public:
      *
      * @throws EmptyFunctionError, if the function has no target.
      */
-    inline explicit Function(Targets targets);
+    explicit Function(Targets targets)
+        : mSpecifiedTargets{std::move(targets)}
+    {
+        setReferenceTarget();
+    }
 
     /**
      * @brief Create a function mapping sources to targets.
@@ -90,7 +142,12 @@ public:
      *
      * @throws EmptyFunctionError, if the function has no target.
      */
-    inline Function(Sources sources, Targets targets);
+    Function(Sources sources, Targets targets)
+        : mSpecifiedSources{std::move(sources)}
+        , mSpecifiedTargets{std::move(targets)}
+    {
+        setReferenceTarget();
+    }
 
     ~Function() = default;
 
@@ -112,24 +169,95 @@ public:
      *
      * @throws CyclicDependencyError, if the program has cyclic dependencies.
      */
-    inline void compile();
+    void compile()
+    {
+        mTargets.clear();
+        mSources.clear();
+        mPureTargets.clear();
+        mPureSources.clear();
+        mSequence.clear();
+        try {
+            std::ranges::for_each(
+                TopoView(mSpecifiedTargets, mSpecifiedSources),
+                [this](TopoView::NodeInfo const& current) {
+                    auto* computation
+                        = dynamic_cast<Computation*>(current.node);
+                    // being source and being target are independent properties,
+                    // need to consider all 4 cases
+                    if (current.isLeaf) {
+                        this->mSources.insert(computation);
+                        if (current.isRoot) {
+                            this->mTargets.insert(computation);
+                        } else {
+                            // source but not target
+                            this->mPureSources.insert(computation);
+                        }
+                    } else if (current.isRoot) {
+                        this->mTargets.insert(computation);
+                        // target but not source
+                        this->mPureTargets.insert(computation);
+                    } else {
+                        // Collect internal computations in a topologically
+                        // ordered sequence.
+                        this->mSequence.push_back(computation);
+                    }
+                });
+        } catch (internal::CyclicGraphError const& /*error*/) {
+            // prevent evaluation
+            mTargets.clear();
+            mSequence.clear();
+            mPureTargets.clear();
+            mPureSources.clear();
+
+            // indicate failed compilation
+            mSources.clear();
+
+            throw CyclicDependencyError(
+                "Cyclic dependency detected during function compilation.");
+        }
+    }
 
     /**
      * @brief True if the function has been compiled successfully.
      */
-    inline auto compiled() const -> bool;
+    auto compiled() const -> bool { return !mSources.empty(); }
 
     /**
      * @brief Compile the function if it is not already successfully compiled.
      */
-    inline void compileIfNecessary();
+    void compileIfNecessary()
+    {
+        if (!compiled()) {
+            compile();
+        }
+    }
 
     /**
      * @brief Info string about the function's internals.
      *
      * This function is intended for debugging purposes.
      */
-    inline auto str() const -> std::string;
+    auto str() const -> std::string
+    {
+        auto ss = std::ostringstream{};
+        if (compiled()) {
+            ss << "Function with " << mSources.size() << " sources, "
+               << mTargets.size() << " targets, and " << mSequence.size()
+               << " internal computations.\n";
+            ss << "Sources:\n";
+            std::ranges::for_each(mSources,
+                [&](Computation* computation) { ss << computation << "\n"; });
+            ss << "Targets:\n";
+            std::ranges::for_each(mTargets,
+                [&](Computation* computation) { ss << computation << "\n"; });
+            ss << "Internal computations:\n";
+            std::ranges::for_each(mSequence,
+                [&](Computation* computation) { ss << computation << "\n"; });
+        } else {
+            ss << "Function not compiled.\n";
+        }
+        return ss.str();
+    }
 
     /**
      * @brief Evaluate the target and intermediate variables.
@@ -139,7 +267,14 @@ public:
 
      * @note Before calling this, all source variables must have valid values.
      */
-    inline void evaluate();
+    void evaluate()
+    {
+        compileIfNecessary();
+        std::ranges::for_each(mSequence,
+            [](Computation* computation) { computation->evaluate(); });
+        std::ranges::for_each(mPureTargets,
+            [](Computation* computation) { computation->evaluate(); });
+    }
 
 #ifndef AUTODIFF_NO_FORWARD_MODE
     /**
@@ -164,7 +299,14 @@ public:
      * @note Before calling this, the function must be evaluated and all source
      * variables must have valid derivatives.
      */
-    inline void pushTangent();
+    void pushTangent()
+    {
+        compileIfNecessary();
+        std::ranges::for_each(mSequence,
+            [](Computation* computation) { computation->pushTangent(); });
+        std::ranges::for_each(mPureTargets,
+            [](Computation* computation) { computation->pushTangent(); });
+    }
 
     /**
      * @brief Forward-mode automatic differentiation with seed.
@@ -188,7 +330,24 @@ public:
      *
      * @throws SeedError, if @c seed is not an actual source of the function.
      */
-    inline void pushTangentAt(AbstractVariable const& seed);
+    void pushTangentAt(AbstractVariable const& seed)
+    {
+        compileIfNecessary();
+
+        auto* const seedNode = seed._node();
+
+        if (mSources.find(seedNode) == mSources.end()) {
+            throw SeedError("Seed variable must be a source of the function.");
+        }
+
+        auto const seedShape = seedNode->valueShape();
+        std::ranges::for_each(mSources, [&](Computation* computation) {
+            computation->setTangentZero(seedShape);
+        });
+        seedNode->setDerivativeIdentity();
+
+        pushTangent();
+    }
 #endif
 
 #ifndef AUTODIFF_NO_REVERSE_MODE
@@ -212,7 +371,26 @@ public:
      * @note Before calling this, the function must be evaluated and all target
      * variables must have valid derivatives.
      */
-    inline void pullGradient();
+    void pullGradient()
+    {
+        compileIfNecessary();
+
+        auto const seedShape = mReferenceTarget->derivativeCodomainShape();
+
+        // initialize internal and source gradients to zero
+        std::ranges::for_each(mSequence, [&](Computation* computation) {
+            computation->setGradientZero(seedShape);
+        });
+        std::ranges::for_each(mPureSources, [&](Computation* computation) {
+            computation->setGradientZero(seedShape);
+        });
+
+        // pull back gradients from targets to sources
+        std::ranges::for_each(mPureTargets,
+            [](Computation* computation) { computation->pullGradient(); });
+        std::ranges::for_each(mSequence | std::views::reverse,
+            [](Computation* computation) { computation->pullGradient(); });
+    }
 
     /**
      * @brief Reverse-mode automatic differentiation (backpropagation) with
@@ -237,14 +415,38 @@ public:
      *
      * @throws SeedError, if @c seed is not a target of the function.
      */
-    inline void pullGradientAt(AbstractVariable const& seed);
+    void pullGradientAt(AbstractVariable const& seed)
+    {
+        compileIfNecessary();
+
+        auto* const seedNode = seed._node();
+
+        if (mTargets.find(seedNode) == mTargets.end()) {
+            throw SeedError("Seed variable must be a target of the function.");
+        }
+
+        auto const seedShape = seedNode->valueShape();
+        std::ranges::for_each(mTargets, [&](Computation* computation) {
+            computation->setGradientZero(seedShape);
+        });
+        seedNode->setDerivativeIdentity();
+
+        pullGradient();
+    }
 #endif
 
 private:
     using Computation = internal::AbstractComputation;
     using TopoView    = internal::TopoView;
 
-    inline void setReferenceTarget();
+    void setReferenceTarget()
+    {
+        if (mSpecifiedTargets.obj.empty()) {
+            throw EmptyFunctionError("Function must have at least one target.");
+        }
+        mReferenceTarget
+            = dynamic_cast<Computation*>(*mSpecifiedTargets.obj.begin());
+    }
 
     // user specified
     Sources mSpecifiedSources{};
@@ -265,7 +467,12 @@ private:
  * @param  variables   the source variables
  */
 template <typename... Variables>
-auto from(Variables const&... variables) -> Function::Sources;
+auto from(Variables const&... variables) -> Function::Sources
+{
+    Function::Sources sources{};
+    (sources.obj.insert(variables._node()), ...);
+    return sources;
+}
 
 /**
  * @brief Create a set of function targets from a list of variables.
@@ -273,10 +480,13 @@ auto from(Variables const&... variables) -> Function::Sources;
  * @param  variables   the target variables
  */
 template <typename... Variables>
-auto to(Variables const&... variables) -> Function::Targets;
+auto to(Variables const&... variables) -> Function::Targets
+{
+    Function::Targets targets{};
+    (targets.obj.insert(variables._node()), ...);
+    return targets;
+}
 
 } // namespace AutoDiff
-
-#include "Function.tpp" // implementation
 
 #endif // AUTODIFF_SRC_CORE_FUNCTION_HPP
