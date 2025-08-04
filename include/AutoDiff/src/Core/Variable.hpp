@@ -6,16 +6,13 @@
 #ifndef AUTODIFF_SRC_CORE_VARIABLE_HPP
 #define AUTODIFF_SRC_CORE_VARIABLE_HPP
 
-#include "../internal/Computation.hpp"
-#include "../internal/Node.hpp" // NodeOwner
+#include "../internal/Node.hpp"
+#include "../internal/Reference.hpp"
 #include "../internal/traits.hpp"
 #include "AbstractVariable.hpp"
 #include "Expression.hpp"
 
-#include <algorithm> // swap
-#include <memory>
-#include <type_traits> // enable_if
-#include <utility>     // move
+#include <type_traits>
 
 namespace AutoDiff {
 
@@ -231,92 +228,20 @@ public:
     void _releaseCacheImpl() const { } // does not apply to Variable
 
 private:
-    /**
-     * @class Reference
-     * @brief Essentially a shared pointer to a computation node.
-     *
-     * Additionally, it holds a unique owner object that is used
-     * to register and unregister ownership of the computation.
-     */
-    class Reference {
-    public:
-        using Owner       = internal::NodeOwner;
-        using Computation = internal::Computation<Value, Derivative>;
+    template <typename V, typename D>
+    friend auto d(Variable<V, D> const&) -> D const&;
 
-        Reference() { mComputation->addParentOwner(mOwner); }
+    template <typename V, typename D>
+    friend auto operator==(
+        Variable<V, D> const& left, Variable<V, D> const& right) -> bool;
 
-        Reference(Reference const& other)
-            : mComputation{other.mComputation}
-            , mComputationPtr{other.mComputationPtr}
-        {
-            mComputation->addParentOwner(mOwner); // owner is unique
-        }
+    template <typename V, typename D>
+    friend auto operator!=(
+        Variable<V, D> const& left, Variable<V, D> const& right) -> bool;
 
-        auto operator=(Reference other) -> Reference&
-        {
-            swap(*this, other);
-            return *this;
-        }
-
-        ~Reference()
-        {
-            if (static_cast<bool>(mComputation)) {
-                mComputation->removeParentOwner(mOwner);
-            } // else transferOperationTo was called
-        }
-
-        Reference(Reference&&) noexcept                    = default;
-        auto operator=(Reference&&) noexcept -> Reference& = default;
-
-        [[nodiscard]] auto operator->() const -> Computation*
-        {
-            // Note: raw ptr always valid:
-            // ~Node guarantees that this function is not called
-            // between ~Computation and ~Variable.
-            return mComputationPtr;
-        }
-
-        void transferOperationTo(internal::Node& node)
-        {
-            // Note: shared_ptr always valid:
-            // This function is called at most once, which is when the
-            // parent Variable is bound in an expression (copy ctor).
-
-            // unregister ownership
-            mComputation->removeParentOwner(mOwner);
-            // transfer owning pointer to node
-            node.addChild(mComputation);
-            mComputation.reset();
-        }
-
-        [[nodiscard]] friend auto operator==(
-            Reference const& left, Reference const& right)
-        {
-            return left.mComputationPtr == right.mComputationPtr;
-        }
-
-        [[nodiscard]] friend auto operator!=(
-            Reference const& left, Reference const& right)
-        {
-            return left.mComputationPtr != right.mComputationPtr;
-        }
-
-        friend void swap(Reference& a, Reference& b) noexcept
-        {
-            using std::swap;
-            swap(a.mOwner, b.mOwner);
-            swap(a.mComputation, b.mComputation);
-            swap(a.mComputationPtr, b.mComputationPtr);
-        }
-
-    private:
-        std::unique_ptr<Owner> mOwner{std::make_unique<Owner>()};
-        std::shared_ptr<Computation> mComputation{
-            std::make_shared<Computation>()};
-        Computation* mComputationPtr{mComputation.get()};
-    };
-
-    Reference mRef;
+    // The reference to the computation node
+    // that holds the value and derivative.
+    internal::Reference<Value, Derivative> mRef;
 };
 
 // Variable factories =========================================================
@@ -405,8 +330,6 @@ auto var(Variable<Value, Derivative> const& variable)
     newVariable.setExpression(variable);
     return newVariable;
 }
-
-#include "Variable.tpp" // implementations
 
 } // namespace AutoDiff
 
