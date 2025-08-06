@@ -111,8 +111,9 @@ SCENARIO("Map description", "[MapDescription]")
     }
     WHEN("creating description for evaluated map")
     {
-        auto const descr
-            = MapDescription{MapDescription::evaluated, {1, 2}, {3}};
+        auto const descr = MapDescription{.state = MapDescription::evaluated,
+            .domainShape                         = {1, 2},
+            .codomainShape                       = {3}};
         CHECK(descr.state == MapDescription::evaluated);
         CHECK(descr.domainShape == Shape{1, 2});
         CHECK(descr.codomainShape == Shape{3});

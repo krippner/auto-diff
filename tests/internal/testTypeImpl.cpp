@@ -72,17 +72,23 @@ SCENARIO("Generate derivatives", "[TypeImpl]")
     test_type_impl::Derivative derivative{-1};
     WHEN("generating derivative with evaluated state")
     {
-        generate(derivative, MapDescription{MapDescription::evaluated, {}, {}});
+        generate(derivative, MapDescription{.state = MapDescription::evaluated,
+                                 .domainShape      = {},
+                                 .codomainShape    = {}});
         CHECK(derivative.value == 13);
     }
     WHEN("generating zero derivative")
     {
-        generate(derivative, MapDescription{MapDescription::zero, {}, {}});
+        generate(derivative, MapDescription{.state = MapDescription::zero,
+                                 .domainShape      = {},
+                                 .codomainShape    = {}});
         CHECK(derivative.value == 0);
     }
     WHEN("generating identity derivative")
     {
-        generate(derivative, MapDescription{MapDescription::identity, {}, {}});
+        generate(derivative, MapDescription{.state = MapDescription::identity,
+                                 .domainShape      = {},
+                                 .codomainShape    = {}});
         CHECK(derivative.value == 1);
     }
 }

@@ -127,7 +127,7 @@ SCENARIO("Pushforward of tangent by f: A -> B", "[Computation]")
     // here, instead of b.evaluate(), set value directly
     b.setValue(test::Point{dimB}); // this lets b know about dimB
     // randomize derivative and set wrong dimensions
-    b.setDerivative(test::Jacobian{0, 0, 20});
+    b.setDerivative(test::Jacobian{.rows = 0, .cols = 0, .value = 20});
 
     // expression of function f with random derivative
     auto f               = test::MockOperation<test::Point, test::Jacobian>();
@@ -150,7 +150,7 @@ SCENARIO("Pushforward of tangent by f: A -> B", "[Computation]")
     {
         // setting derivative just copies
         // no sanity checks on dimensions
-        auto const tangent = test::Jacobian{2, 3, 13};
+        auto const tangent = test::Jacobian{.rows = 2, .cols = 3, .value = 13};
         b.setDerivative(tangent);
         THEN("tangent is retained") { CHECK(b.derivative() == tangent); }
     }
@@ -181,12 +181,12 @@ SCENARIO("Pullback of gradient by f: A -> B", "[Computation]")
     // some functions must be accessible through the base class
     auto& bBaseRef = dynamic_cast<AbstractComputation&>(b);
     // set a random gradient
-    auto const gradient = test::Jacobian{2, 3, 13};
+    auto const gradient = test::Jacobian{.rows = 2, .cols = 3, .value = 13};
     b.setDerivative(gradient);
 
     // expression of function f with wrong derivative
     auto f         = test::MockOperation<test::Point, test::Jacobian>();
-    f.derivative() = test::Jacobian{0, 0, 2};
+    f.derivative() = test::Jacobian{.rows = 0, .cols = 0, .value = 2};
     b.setExpression(f);
 
     WHEN("pulling back gradient by f")
@@ -231,7 +231,7 @@ SCENARIO("Adding gradient", "[Computation]")
     {
         // setting derivative just copies
         // no sanity checks on dimensions
-        auto const gradient = test::Jacobian{2, 3, 13};
+        auto const gradient = test::Jacobian{.rows = 2, .cols = 3, .value = 13};
         b.setDerivative(gradient);
         THEN("gradient is retained") { CHECK(b.derivative() == gradient); }
     }
@@ -247,7 +247,7 @@ SCENARIO("Adding gradient", "[Computation]")
     }
     WHEN("adding a gradient")
     {
-        auto gradient = test::Jacobian{rows, dimB, 13};
+        auto gradient = test::Jacobian{.rows = rows, .cols = dimB, .value = 13};
         b.addGradient(gradient);
         THEN("gradient equals added gradient")
         {
@@ -255,7 +255,8 @@ SCENARIO("Adding gradient", "[Computation]")
         }
         AND_WHEN("adding another gradient")
         {
-            auto const gradient2 = test::Jacobian{rows, dimB, -4};
+            auto const gradient2
+                = test::Jacobian{.rows = rows, .cols = dimB, .value = -4};
             b.addGradient(gradient2);
             THEN("gradient equals added gradient")
             {
