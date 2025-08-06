@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -14,42 +14,32 @@
 #ifndef AUTODIFF_SRC_BASIC_FACTORIES_HPP
 #define AUTODIFF_SRC_BASIC_FACTORIES_HPP
 
-#include "traits.hpp"
+#include "concepts.hpp"
 
 #define AUTODIFF_MAKE_BASIC_UNARY_OP(operation, Type)                          \
-    template <typename X>                                                      \
+    template <Basic::ExpressionType X>                                         \
     auto operation(Expression<X> const& x)                                     \
-        -> std::enable_if_t<Basic::hasBasicValue_v<X>, Type<X>>                \
     {                                                                          \
         return Type<X>(x);                                                     \
     }
 
 #define AUTODIFF_MAKE_BASIC_BINARY_OP(operation, Type)                         \
-    template <typename X, typename Y>                                          \
+    template <Basic::ExpressionType X, Basic::ExpressionType Y>                \
     auto operation(Expression<X> const& x, Expression<Y> const& y)             \
-        -> std::enable_if_t<Basic::hasBasicValue_v<X>                          \
-                                && Basic::hasBasicValue_v<Y>,                  \
-            Type<X, Y>>                                                        \
     {                                                                          \
         return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename Scalar, typename Y>                                     \
-    auto operation(Scalar x, Expression<Y> const& y)                           \
-        -> std::enable_if_t<Basic::isBasicType_v<Scalar>                       \
-                                && Basic::hasBasicValue_v<Y>,                  \
-            Type<Scalar, Y>>                                                   \
+    template <Basic::Scalar X, Basic::ExpressionType Y>                        \
+    auto operation(X x, Expression<Y> const& y)                                \
     {                                                                          \
-        return Type<Scalar, Y>(x, y);                                          \
+        return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename X, typename Scalar>                                     \
-    auto operation(Expression<X> const& x,                                     \
-        Scalar y) -> std::enable_if_t<Basic::hasBasicValue_v<X>                \
-                                          && Basic::isBasicType_v<Scalar>,     \
-                      Type<X, Scalar>>                                         \
+    template <Basic::ExpressionType X, Basic::Scalar Y>                        \
+    auto operation(Expression<X> const& x, Y y)                                \
     {                                                                          \
-        return Type<X, Scalar>(x, y);                                          \
+        return Type<X, Y>(x, y);                                               \
     }
 
 #endif // AUTODIFF_SRC_BASIC_FACTORIES_HPP
