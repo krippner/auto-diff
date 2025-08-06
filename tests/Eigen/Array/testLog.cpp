@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Log.hpp>
 
-SCENARIO("log(x)", "EigenAD::Array::Log")
+SCENARIO("log(x)", "EigenAD::ArrayOps::Log")
 {
     auto const point = Eigen::ArrayXXd{{1.0, 2.0}, {0.5, 1.5}};
     auto const value

@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Pow.hpp>
 
-SCENARIO("pow(x, y)", "EigenAD::Array::Pow")
+SCENARIO("pow(x, y)", "EigenAD::ArrayOps::Pow")
 {
     auto const pX    = Eigen::ArrayXXd{{2.0, 2.0}, {4.0, 2.0}};
     auto const pY    = Eigen::ArrayXXd{{1.0, 2.0}, {0.5, 1.5}};

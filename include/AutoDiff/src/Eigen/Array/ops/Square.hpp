@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_SQUARE_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_SQUARE_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Square : public Expression<Square<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(square, EigenAD::Array::Square)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(square, EigenAD::ArrayOps::Square)
 
 } // namespace AutoDiff
 

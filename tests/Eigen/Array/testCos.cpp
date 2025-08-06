@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Cos.hpp>
 
-SCENARIO("cos(x)", "EigenAD::Array::Cos")
+SCENARIO("cos(x)", "EigenAD::ArrayOps::Cos")
 {
     auto const point = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const value

@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_COS_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_COS_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Cos : public Expression<Cos<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(cos, EigenAD::Array::Cos)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(cos, EigenAD::ArrayOps::Cos)
 
 } // namespace AutoDiff
 

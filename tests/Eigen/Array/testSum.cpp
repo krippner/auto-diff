@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Sum.hpp>
 
-SCENARIO("x + y", "EigenAD::Array::Sum")
+SCENARIO("x + y", "EigenAD::ArrayOps::Sum")
 {
     auto const pX    = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const pY    = Eigen::ArrayXXd{{-1.5, -1.0}, {1.0, 1.5}};

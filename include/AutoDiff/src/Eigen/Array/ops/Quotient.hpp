@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_QUOTIENT_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_QUOTIENT_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X, typename Y>
 class Quotient : public Expression<Quotient<X, Y>>,
@@ -53,11 +53,11 @@ private:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_BINARY_OP(operator/, EigenAD::Array::Quotient)
+AUTODIFF_MAKE_ARRAY_BINARY_OP(operator/, EigenAD::ArrayOps::Quotient)
 
 } // namespace AutoDiff
 

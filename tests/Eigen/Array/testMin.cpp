@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Min.hpp>
 
-SCENARIO("min(0, x)", "EigenAD::Array::Min")
+SCENARIO("min(0, x)", "EigenAD::ArrayOps::Min")
 {
     auto const point      = Eigen::ArrayXXd{{-1.0, 2.0}, {0.0, 1.5}};
     auto const value      = Eigen::ArrayXXd{{-1.0, 0.0}, {0.0, 0.0}};

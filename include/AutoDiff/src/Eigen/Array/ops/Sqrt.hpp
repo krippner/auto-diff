@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_SQRT_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_SQRT_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Sqrt : public Expression<Sqrt<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(sqrt, EigenAD::Array::Sqrt)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(sqrt, EigenAD::ArrayOps::Sqrt)
 
 } // namespace AutoDiff
 

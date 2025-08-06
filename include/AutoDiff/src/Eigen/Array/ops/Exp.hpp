@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_EXP_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_EXP_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Exp : public Expression<Exp<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(exp, EigenAD::Array::Exp)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(exp, EigenAD::ArrayOps::Exp)
 
 } // namespace AutoDiff
 

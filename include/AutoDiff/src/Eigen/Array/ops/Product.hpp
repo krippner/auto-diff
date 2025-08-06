@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_PRODUCT_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_PRODUCT_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X, typename Y>
 class Product : public Expression<Product<X, Y>>, public BinaryOperation<X, Y> {
@@ -43,11 +43,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_BINARY_OP(operator*, EigenAD::Array::Product)
+AUTODIFF_MAKE_ARRAY_BINARY_OP(operator*, EigenAD::ArrayOps::Product)
 
 } // namespace AutoDiff
 

@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Square.hpp>
 
-SCENARIO("square(x)", "EigenAD::Array::Square")
+SCENARIO("square(x)", "EigenAD::ArrayOps::Square")
 {
     auto const point      = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const value      = Eigen::ArrayXXd{{1.0, 4.0}, {0.25, 2.25}};

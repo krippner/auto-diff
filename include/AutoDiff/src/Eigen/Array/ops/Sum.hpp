@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_SUM_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_SUM_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X, typename Y>
 class Sum : public Expression<Sum<X, Y>>, public BinaryOperation<X, Y> {
@@ -42,11 +42,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_BINARY_OP(operator+, EigenAD::Array::Sum);
+AUTODIFF_MAKE_ARRAY_BINARY_OP(operator+, EigenAD::ArrayOps::Sum);
 
 } // namespace AutoDiff
 

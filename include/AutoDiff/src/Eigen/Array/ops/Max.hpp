@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_MAX_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_MAX_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Max : public Expression<Max<X>>, public UnaryOperation<X> {
@@ -38,11 +38,11 @@ private:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(max, EigenAD::Array::Max)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(max, EigenAD::ArrayOps::Max)
 
 } // namespace AutoDiff
 

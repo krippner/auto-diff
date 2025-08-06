@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_LOG_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_LOG_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Log : public Expression<Log<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(log, EigenAD::Array::Log)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(log, EigenAD::ArrayOps::Log)
 
 } // namespace AutoDiff
 

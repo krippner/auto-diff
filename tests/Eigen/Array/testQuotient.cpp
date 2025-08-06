@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Quotient.hpp>
 
-SCENARIO("x / y", "EigenAD::Array::Quotient")
+SCENARIO("x / y", "EigenAD::ArrayOps::Quotient")
 {
     auto const pX    = Eigen::ArrayXXd{{2.0, 2.0}, {4.0, 3.0}};
     auto const pY    = Eigen::ArrayXXd{{1.0, -2.0}, {0.5, 1.5}};

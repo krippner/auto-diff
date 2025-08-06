@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_POW_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_POW_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X, typename Y>
 class Pow : public Expression<Pow<X, Y>>, public BinaryOperation<X, Y> {
@@ -49,12 +49,12 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_ARRAY_OP(pow, EigenAD::Array::Pow)
-AUTODIFF_MAKE_ARRAY_SCALAR_OP(pow, EigenAD::Array::Pow)
+AUTODIFF_MAKE_ARRAY_ARRAY_OP(pow, EigenAD::ArrayOps::Pow)
+AUTODIFF_MAKE_ARRAY_SCALAR_OP(pow, EigenAD::ArrayOps::Pow)
 
 } // namespace AutoDiff
 

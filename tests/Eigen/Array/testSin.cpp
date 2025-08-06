@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Sin.hpp>
 
-SCENARIO("sin(x)", "EigenAD::Array::Sin")
+SCENARIO("sin(x)", "EigenAD::ArrayOps::Sin")
 {
     auto const point = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const value

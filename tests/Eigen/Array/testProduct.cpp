@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Product.hpp>
 
-SCENARIO("x * y", "EigenAD::Array::Product")
+SCENARIO("x * y", "EigenAD::ArrayOps::Product")
 {
     auto const pX    = Eigen::ArrayXXd{{2.0, 2.0}, {4.0, 2.0}};
     auto const pY    = Eigen::ArrayXXd{{1.0, -2.0}, {0.5, 1.5}};

@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Difference.hpp>
 
-SCENARIO("x - y", "EigenAD::Array::Difference")
+SCENARIO("x - y", "EigenAD::ArrayOps::Difference")
 {
     auto const pX    = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const pY    = Eigen::ArrayXXd{{-1.5, -1.0}, {1.0, 1.5}};

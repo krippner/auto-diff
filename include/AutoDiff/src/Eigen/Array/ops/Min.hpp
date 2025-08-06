@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_MIN_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_MIN_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Min : public Expression<Min<X>>, public UnaryOperation<X> {
@@ -38,11 +38,11 @@ private:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(min, EigenAD::Array::Min)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(min, EigenAD::ArrayOps::Min)
 
 } // namespace AutoDiff
 

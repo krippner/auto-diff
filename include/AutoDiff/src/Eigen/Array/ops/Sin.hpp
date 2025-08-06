@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_SIN_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_SIN_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Sin : public Expression<Sin<X>>, public UnaryOperation<X> {
@@ -31,11 +31,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(sin, EigenAD::Array::Sin)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(sin, EigenAD::ArrayOps::Sin)
 
 } // namespace AutoDiff
 

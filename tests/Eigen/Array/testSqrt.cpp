@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Sqrt.hpp>
 
-SCENARIO("sqrt(x)", "EigenAD::Array::Sqrt")
+SCENARIO("sqrt(x)", "EigenAD::ArrayOps::Sqrt")
 {
     auto const point = Eigen::ArrayXXd{{1.0, 2.0}, {0.5, 1.5}};
     auto const value = Eigen::ArrayXXd{{1.0, 1.414214}, {0.7071068, 1.224745}};

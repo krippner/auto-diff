@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Exp.hpp>
 
-SCENARIO("exp(x)", "EigenAD::Array::Exp")
+SCENARIO("exp(x)", "EigenAD::ArrayOps::Exp")
 {
     auto const point = Eigen::ArrayXXd{{-1.0, 2.0}, {0.5, 1.5}};
     auto const value

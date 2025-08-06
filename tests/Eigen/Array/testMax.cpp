@@ -2,7 +2,7 @@
 
 #include <AutoDiff/src/Eigen/Array/ops/Max.hpp>
 
-SCENARIO("max(0, x)", "EigenAD::Array::Max")
+SCENARIO("max(0, x)", "EigenAD::ArrayOps::Max")
 {
     auto const point      = Eigen::ArrayXXd{{-1.0, 2.0}, {0.0, 1.5}};
     auto const value      = Eigen::ArrayXXd{{0.0, 2.0}, {0.0, 1.5}};

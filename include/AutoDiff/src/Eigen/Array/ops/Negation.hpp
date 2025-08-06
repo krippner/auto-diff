@@ -6,7 +6,7 @@
 #ifndef AUTODIFF_SRC_EIGEN_ARRAY_OPS_NEGATION_HPP
 #define AUTODIFF_SRC_EIGEN_ARRAY_OPS_NEGATION_HPP
 
-namespace AutoDiff::EigenAD::Array {
+namespace AutoDiff::EigenAD::ArrayOps {
 
 template <typename X>
 class Negation : public Expression<Negation<X>>, public UnaryOperation<X> {
@@ -28,11 +28,11 @@ public:
     }
 };
 
-} // namespace AutoDiff::EigenAD::Array
+} // namespace AutoDiff::EigenAD::ArrayOps
 
 namespace AutoDiff {
 
-AUTODIFF_MAKE_ARRAY_UNARY_OP(operator-, EigenAD::Array::Negation)
+AUTODIFF_MAKE_ARRAY_UNARY_OP(operator-, EigenAD::ArrayOps::Negation)
 
 } // namespace AutoDiff
 
