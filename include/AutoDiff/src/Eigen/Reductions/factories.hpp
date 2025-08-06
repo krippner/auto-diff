@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -14,12 +14,11 @@
 #ifndef AUTODIFF_SRC_EIGEN_REDUCTIONS_FACTORIES_HPP
 #define AUTODIFF_SRC_EIGEN_REDUCTIONS_FACTORIES_HPP
 
-#include "../traits.hpp"
+#include "../concepts.hpp"
 
 #define AUTODIFF_MAKE_MATRIXBASE_UNARY_OP(operation, Type)                     \
-    template <typename X>                                                      \
+    template <EigenAD::MatrixBaseExpression X>                                 \
     auto operation(Expression<X> const& x)                                     \
-        -> std::enable_if_t<EigenAD::hasMatrixBaseValue_v<X>, Type<X>>         \
     {                                                                          \
         return Type<X>(x);                                                     \
     }

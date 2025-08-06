@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -17,10 +17,10 @@
 
 #include "../internal/TypeImpl.hpp"
 #include "../internal/traits.hpp" // traits to be specialized
-#include "traits.hpp"             // isScalar, isDense, isMatrixBase, isArray
+#include "concepts.hpp"           // Scalar, Dense, MatrixBase, Array
 
-#include <type_traits>
-#include <utility> // declval
+#include <type_traits> // remove_cvref is_same conditional
+#include <utility>     // declval
 
 // forward-declare Eigen types
 
@@ -64,51 +64,46 @@ using Vector4f = Matrix<float, 4, 1, 0, 4, 1>;
 namespace AutoDiff::internal {
 
 // Scalar types are already equal to their evaluated types.
-template <typename Scalar>
-struct Evaluated<Scalar, std::enable_if_t<EigenAD::isScalar_v<Scalar>>> {
-    using type = Scalar;
+template <EigenAD::Scalar T>
+struct Evaluated<T> {
+    using type = T;
 };
 
 // Let Eigen decide the evaluated type of dense Eigen types.
-template <typename Dense>
-struct Evaluated<Dense, std::enable_if_t<EigenAD::isDense_v<Dense>>> {
-    using type = std::remove_cvref_t<decltype(std::declval<Dense>().eval())>;
+template <EigenAD::Dense T>
+struct Evaluated<T> {
+    using type = std::remove_cvref_t<decltype(std::declval<T>().eval())>;
 };
 
-// For arrays, values and derivatives must have the same type
-// (or at least same dimensions at runtime).
-template <typename Array>
-struct DefaultDerivative<Array, std::enable_if_t<EigenAD::isArray_v<Array>>> {
-    using type = Array;
+template <EigenAD::Array T>
+struct DefaultDerivative<T> {
+    using Scalar = std::conditional_t<std::is_same_v<typename T::Scalar, float>,
+        float, // float -> float derivative
+        double // otherwise
+        >;
+    // Arrays are paired with derivatives of same shape
+    using type = Eigen::Array<Scalar, //
+        T::RowsAtCompileTime,         //
+        T::ColsAtCompileTime,         //
+        0,                            //
+        T::MaxRowsAtCompileTime,      //
+        T::MaxColsAtCompileTime>;
 };
 
-// By default, floats are paired with float derivatives...
-
-template <>
-struct DefaultDerivative<float> {
-    using type = Eigen::MatrixXf;
+template <EigenAD::Scalar T>
+struct DefaultDerivative<T> {
+    using type = std::conditional_t<std::is_same_v<T, float>,
+        Eigen::MatrixXf, // float -> float derivative
+        Eigen::MatrixXd  // otherwise
+        >;
 };
 
-template <typename Matrix>
-struct DefaultDerivative<Matrix,
-    std::enable_if_t<EigenAD::isMatrixBase_v<Matrix>
-                     && std::is_same_v<typename Matrix::Scalar, float>>> {
-    using type = Eigen::MatrixXf;
-};
-
-// ...otherwise, use double derivatives.
-
-template <typename T>
-struct DefaultDerivative<T,
-    std::enable_if_t<EigenAD::isScalar_v<T> && !std::is_same_v<T, float>>> {
-    using type = Eigen::MatrixXd;
-};
-
-template <typename T>
-struct DefaultDerivative<T,
-    std::enable_if_t<EigenAD::isMatrixBase_v<T>
-                     && !std::is_same_v<typename T::Scalar, float>>> {
-    using type = Eigen::MatrixXd;
+template <EigenAD::MatrixBase T>
+struct DefaultDerivative<T> {
+    using type = std::conditional_t<std::is_same_v<typename T::Scalar, float>,
+        Eigen::MatrixXf, // float -> float derivative
+        Eigen::MatrixXd  // otherwise
+        >;
 };
 
 } // namespace AutoDiff::internal
@@ -117,26 +112,25 @@ struct DefaultDerivative<T,
 
 namespace AutoDiff::internal {
 
-template <typename Scalar>
-struct TypeImpl<Scalar, std::enable_if_t<EigenAD::isScalar_v<Scalar>>> {
-    static auto getShape(Scalar const& /*scalar*/) -> Shape { return {1}; }
-    static void assign(Scalar& value, Scalar const& other) { value = other; }
+template <EigenAD::Scalar T>
+struct TypeImpl<T> {
+    static auto getShape(T const& /*scalar*/) -> Shape { return {1}; }
+    static void assign(T& value, T const& other) { value = other; }
 };
 
-template <typename MatrixBase>
-struct TypeImpl<MatrixBase,
-    std::enable_if_t<EigenAD::isMatrixBase_v<MatrixBase>>> {
-    static auto getShape(MatrixBase const& matrix) -> Shape
+template <EigenAD::MatrixBase T>
+struct TypeImpl<T> {
+    static auto getShape(T const& matrix) -> Shape
     {
         return {static_cast<std::size_t>(matrix.size())};
     }
 
-    static auto codomainShape(MatrixBase const& matrix) -> Shape
+    static auto codomainShape(T const& matrix) -> Shape
     {
         return {static_cast<std::size_t>(matrix.rows())};
     }
 
-    static void generate(MatrixBase& matrix, MapDescription const& descr)
+    static void generate(T& matrix, MapDescription const& descr)
     {
         if (descr.state == MapDescription::zero) {
             matrix.setZero(descr.codomainShape[0], descr.domainShape[0]);
@@ -146,33 +140,33 @@ struct TypeImpl<MatrixBase,
     }
 
     template <typename Other>
-    static void assign(MatrixBase& matrix, Other const& other)
+    static void assign(T& matrix, Other const& other)
     {
         matrix.noalias() = other;
     }
 
     template <typename Other>
-    static void addTo(MatrixBase& matrix, Other const& other)
+    static void addTo(T& matrix, Other const& other)
     {
         matrix.noalias() += other;
     }
 };
 
-template <typename Array>
-struct TypeImpl<Array, std::enable_if_t<EigenAD::isArray_v<Array>>> {
-    static auto getShape(Array const& array) -> Shape
+template <EigenAD::Array T>
+struct TypeImpl<T> {
+    static auto getShape(T const& array) -> Shape
     {
         return {static_cast<std::size_t>(array.rows()),
             static_cast<std::size_t>(array.cols())};
     }
 
-    static auto codomainShape(Array const& array) -> Shape
+    static auto codomainShape(T const& array) -> Shape
     {
         return {static_cast<std::size_t>(array.rows()),
             static_cast<std::size_t>(array.cols())};
     }
 
-    static void generate(Array& array, MapDescription const& descr)
+    static void generate(T& array, MapDescription const& descr)
     {
         if (descr.state == MapDescription::zero) {
             array.setZero(descr.domainShape[0], descr.domainShape[1]);
@@ -182,13 +176,13 @@ struct TypeImpl<Array, std::enable_if_t<EigenAD::isArray_v<Array>>> {
     }
 
     template <typename Other>
-    static void assign(Array& array, Other const& other)
+    static void assign(T& array, Other const& other)
     {
         array = other;
     }
 
     template <typename Other>
-    static void addTo(Array& array, Other const& other)
+    static void addTo(T& array, Other const& other)
     {
         array += other;
     }
@@ -204,12 +198,9 @@ template <typename Value, typename Derivative>
 class Variable;
 
 using Real    = Variable<double, Eigen::MatrixXd>;
+using RealF   = Variable<float, Eigen::MatrixXf>;
 using Integer = Variable<int, Eigen::MatrixXd>;
 using Boolean = Variable<bool, Eigen::MatrixXd>;
-
-using RealF    = Variable<float, Eigen::MatrixXf>;
-using IntegerF = Variable<int, Eigen::MatrixXf>;
-using BooleanF = Variable<bool, Eigen::MatrixXf>;
 
 using Vector   = Variable<Eigen::VectorXd, Eigen::MatrixXd>;
 using Vector2d = Variable<Eigen::Vector2d, Eigen::MatrixXd>;

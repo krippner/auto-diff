@@ -13,5 +13,13 @@ target_link_libraries(EigenModuleTest PRIVATE
     Eigen3::Eigen
     AutoDiff::AutoDiff
 )
-catch_discover_tests(EigenModuleTest)
+
+add_executable(EigenConceptsTest testConcepts.cpp)
+target_compile_features(EigenConceptsTest PRIVATE cxx_std_11)
+target_link_libraries(EigenConceptsTest PRIVATE
+    Catch2::Catch2WithMain
+    Eigen3::Eigen
+    AutoDiff::AutoDiff
+)
+catch_discover_tests(EigenConceptsTest)
 

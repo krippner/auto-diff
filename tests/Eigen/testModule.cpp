@@ -15,7 +15,7 @@ using AutoDiff::var;
 
 using Catch::Matchers::WithinAbsMatcher;
 
-SCENARIO("Integrating Eigen Array module with core classes")
+SCENARIO("Integrating Eigen Array module with core classes", "[Eigen]")
 {
     auto u = var(Eigen::Array2d{-0.5, 1.5});
     auto x = var(-cos(u) / u);
@@ -105,4 +105,61 @@ SCENARIO("Computation with float derivatives", "[Eigen]")
     CHECK(d(x).isApprox(targetDerivX, 1e-6));
     CAPTURE(d(y), targetDerivY);
     CHECK(d(y).isApprox(targetDerivY, 1e-6));
+}
+
+template <typename T>
+using Evaluated_t = AutoDiff::internal::Evaluated_t<T>;
+
+TEST_CASE("Evaluated type trait", "[Eigen]")
+{
+    STATIC_CHECK(std::is_same_v<Evaluated_t<int>, int>);
+    STATIC_CHECK(std::is_same_v<Evaluated_t<float>, float>);
+    STATIC_CHECK(std::is_same_v<Evaluated_t<double>, double>);
+    STATIC_CHECK(std::is_same_v<Evaluated_t<Eigen::MatrixXd>, Eigen::MatrixXd>);
+    STATIC_CHECK(std::is_same_v<
+        Evaluated_t<Eigen::Product<Eigen::MatrixXd, Eigen::MatrixXd>>,
+        Eigen::MatrixXd>);
+}
+
+template <typename T>
+using DefaultDerivative_t = AutoDiff::internal::DefaultDerivative_t<T>;
+
+TEST_CASE("DefaultDerivative type trait", "[Eigen]")
+{
+    SECTION("Types with MatrixXd derivative")
+    {
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<int>, Eigen::MatrixXd>);
+        STATIC_CHECK(
+            std::is_same_v<DefaultDerivative_t<double>, Eigen::MatrixXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::MatrixXd>,
+            Eigen::MatrixXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::VectorXd>,
+            Eigen::MatrixXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::VectorXi>,
+            Eigen::MatrixXd>);
+    }
+    SECTION("Types with MatrixXf derivative")
+    {
+        STATIC_CHECK(
+            std::is_same_v<DefaultDerivative_t<float>, Eigen::MatrixXf>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::MatrixXf>,
+            Eigen::MatrixXf>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::VectorXf>,
+            Eigen::MatrixXf>);
+    }
+    SECTION("Types with Array derivatives")
+    {
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXi>,
+            Eigen::ArrayXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXXi>,
+            Eigen::ArrayXXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXf>,
+            Eigen::ArrayXf>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXXf>,
+            Eigen::ArrayXXf>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXd>,
+            Eigen::ArrayXd>);
+        STATIC_CHECK(std::is_same_v<DefaultDerivative_t<Eigen::ArrayXXd>,
+            Eigen::ArrayXXd>);
+    }
 }

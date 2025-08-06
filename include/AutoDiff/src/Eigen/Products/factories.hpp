@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Matthias Krippner
+// Copyright (c) 2024-2025 Matthias Krippner
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -14,122 +14,89 @@
 #ifndef AUTODIFF_SRC_EIGEN_PRODUCTS_FACTORIES_HPP
 #define AUTODIFF_SRC_EIGEN_PRODUCTS_FACTORIES_HPP
 
-#include "../traits.hpp"
+#include "../concepts.hpp"
 
 #define AUTODIFF_MAKE_MATRIXBASE_BINARY_OP(operation, Type)                    \
-    template <typename X, typename Y>                                          \
+    template <EigenAD::MatrixBaseExpression X,                                 \
+        EigenAD::MatrixBaseExpression Y>                                       \
     auto operation(Expression<X> const& x, Expression<Y> const& y)             \
-        -> std::enable_if_t<EigenAD::hasMatrixBaseValue_v<X>                   \
-                                && EigenAD::hasMatrixBaseValue_v<Y>,           \
-            Type<X, Y>>                                                        \
     {                                                                          \
         return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename Derived, typename Y>                                    \
+    template <typename Derived, EigenAD::MatrixBaseExpression Y>               \
     auto operation(                                                            \
         Eigen::MatrixBase<Derived> const& x, Expression<Y> const& y)           \
-        -> std::enable_if_t<EigenAD::hasMatrixBaseValue_v<Y>,                  \
-            Type<Derived, Y>>                                                  \
     {                                                                          \
         return Type<Derived, Y>(x.derived(), y);                               \
     }                                                                          \
                                                                                \
-    template <typename X, typename Derived>                                    \
+    template <EigenAD::MatrixBaseExpression X, typename Derived>               \
     auto operation(                                                            \
         Expression<X> const& x, Eigen::MatrixBase<Derived> const& y)           \
-        -> std::enable_if_t<EigenAD::hasMatrixBaseValue_v<X>,                  \
-            Type<X, Derived>>                                                  \
     {                                                                          \
         return Type<X, Derived>(x, y.derived());                               \
     }
 
 #define AUTODIFF_MAKE_COLVECTOR_BINARY_OP(operation, Type)                     \
-    template <typename X, typename Y>                                          \
+    template <EigenAD::ColVectorExpression X, EigenAD::ColVectorExpression Y>  \
     auto operation(Expression<X> const& x, Expression<Y> const& y)             \
-        -> std::enable_if_t<EigenAD::hasColVectorValue_v<X>                    \
-                                && EigenAD::hasColVectorValue_v<Y>,            \
-            Type<X, Y>>                                                        \
     {                                                                          \
         return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename Derived, typename Y>                                    \
+    template <EigenAD::ColVector Derived, EigenAD::ColVectorExpression Y>      \
     auto operation(                                                            \
         Eigen::MatrixBase<Derived> const& x, Expression<Y> const& y)           \
-        -> std::enable_if_t<EigenAD::isColVector_v<Derived>                    \
-                                && EigenAD::hasColVectorValue_v<Y>,            \
-            Type<Derived, Y>>                                                  \
     {                                                                          \
         return Type<Derived, Y>(x.derived(), y);                               \
     }                                                                          \
                                                                                \
-    template <typename X, typename Derived>                                    \
+    template <EigenAD::ColVectorExpression X, EigenAD::ColVector Derived>      \
     auto operation(                                                            \
         Expression<X> const& x, Eigen::MatrixBase<Derived> const& y)           \
-        -> std::enable_if_t<EigenAD::hasColVectorValue_v<X>                    \
-                                && EigenAD::isColVector_v<Derived>,            \
-            Type<X, Derived>>                                                  \
     {                                                                          \
         return Type<X, Derived>(x, y.derived());                               \
     }
 
 #define AUTODIFF_MAKE_MATRIX_BINARY_OP(operation, Type)                        \
-    template <typename X, typename Y>                                          \
+    template <EigenAD::MatrixExpression X, EigenAD::MatrixExpression Y>        \
     auto operation(Expression<X> const& x, Expression<Y> const& y)             \
-        -> std::enable_if_t<EigenAD::hasMatrixValue_v<X>                       \
-                                && EigenAD::hasMatrixValue_v<Y>,               \
-            Type<X, Y>>                                                        \
     {                                                                          \
         return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename Derived, typename Y>                                    \
+    template <EigenAD::Matrix Derived, EigenAD::MatrixExpression Y>            \
     auto operation(                                                            \
         Eigen::MatrixBase<Derived> const& x, Expression<Y> const& y)           \
-        -> std::enable_if_t<EigenAD::isMatrix_v<Derived>                       \
-                                && EigenAD::hasMatrixValue_v<Y>,               \
-            Type<Derived, Y>>                                                  \
     {                                                                          \
         return Type<Derived, Y>(x.derived(), y);                               \
     }                                                                          \
                                                                                \
-    template <typename X, typename Derived>                                    \
+    template <EigenAD::MatrixExpression X, EigenAD::Matrix Derived>            \
     auto operation(                                                            \
         Expression<X> const& x, Eigen::MatrixBase<Derived> const& y)           \
-        -> std::enable_if_t<EigenAD::hasMatrixValue_v<X>                       \
-                                && EigenAD::isMatrix_v<Derived>,               \
-            Type<X, Derived>>                                                  \
     {                                                                          \
         return Type<X, Derived>(x, y.derived());                               \
     }
 
 #define AUTODIFF_MAKE_MATRIX_COLVECTOR_OP(operation, Type)                     \
-    template <typename X, typename Y>                                          \
+    template <EigenAD::MatrixExpression X, EigenAD::ColVectorExpression Y>     \
     auto operation(Expression<X> const& x, Expression<Y> const& y)             \
-        -> std::enable_if_t<EigenAD::hasMatrixValue_v<X>                       \
-                                && EigenAD::hasColVectorValue_v<Y>,            \
-            Type<X, Y>>                                                        \
     {                                                                          \
         return Type<X, Y>(x, y);                                               \
     }                                                                          \
                                                                                \
-    template <typename Derived, typename Y>                                    \
+    template <EigenAD::Matrix Derived, EigenAD::ColVectorExpression Y>         \
     auto operation(                                                            \
         Eigen::MatrixBase<Derived> const& x, Expression<Y> const& y)           \
-        -> std::enable_if_t<EigenAD::isMatrix_v<Derived>                       \
-                                && EigenAD::hasColVectorValue_v<Y>,            \
-            Type<Derived, Y>>                                                  \
     {                                                                          \
         return Type<Derived, Y>(x.derived(), y);                               \
     }                                                                          \
                                                                                \
-    template <typename X, typename Derived>                                    \
+    template <EigenAD::MatrixExpression X, EigenAD::ColVector Derived>         \
     auto operation(                                                            \
         Expression<X> const& x, Eigen::MatrixBase<Derived> const& y)           \
-        -> std::enable_if_t<EigenAD::hasMatrixBaseValue_v<X>                   \
-                                && EigenAD::isColVector_v<Derived>,            \
-            Type<X, Derived>>                                                  \
     {                                                                          \
         return Type<X, Derived>(x, y.derived());                               \
     }
